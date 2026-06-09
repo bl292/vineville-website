@@ -248,36 +248,48 @@ h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif;font-weight:400;line-hei
 
 <!-- ═══ SEARCH ═══ -->
 <div id="page-search" class="page">
-  <div class="sbar">
-    <div class="sbar-row">
-      <div class="mbtns">
-        <button class="mbtn" id="mA" onclick="setM('area')">Area</button>
-        <button class="mbtn" id="mP" onclick="setM('property')">Address / Postcode</button>
-      </div>
-      <input class="sinp" id="SI" placeholder="Search any UK city, area, address or postcode…" onkeydown="if(event.key==='Enter')doS()"/>
-      <button class="sbtn" onclick="doS()">Search →</button>
+  <div class="searchHero">
+    <div class="searchEyebrow">Terra Intelligence</div>
+    <h1>Search any UK property</h1>
+    <p>Enter a postcode or full address to generate live property intelligence for investors, landlords and overseas buyers.</p>
+
+    <div class="searchMode">
+      <button class="mbtn" id="mA" onclick="setM('area')">Area</button>
+      <button class="mbtn on" id="mP" onclick="setM('property')">Address / Postcode</button>
     </div>
-    <div class="shint" id="SH">Area mode: city, town or local authority · Switch to Address for property-level intelligence</div>
+
+    <div class="searchBox">
+      <input
+        class="searchInput"
+        id="SI"
+        placeholder="Enter postcode or address, e.g. M1 1AE or 47 Ashfield Road Sheffield S7 1QB"
+        onkeydown="if(event.key==='Enter')doS()"
+      />
+      <button class="searchButton" onclick="doS()">Search Property</button>
+    </div>
+
+    <div class="shint" id="SH">Address mode: enter any UK address or postcode for property-level intelligence</div>
+
     <div class="exs">
       <span class="ex" onclick="qS('47 Ashfield Road Sheffield S7 1QB','property')">Sheffield S7 · Address</span>
       <span class="ex" onclick="qS('SW1A 2AA','property')">SW1A 2AA · London</span>
       <span class="ex" onclick="qS('M1 1AE','property')">M1 1AE · Manchester</span>
       <span class="ex" onclick="qS('BT1 1AA','property')">BT1 1AA · Belfast</span>
-      <span class="ex" onclick="qS('EH1 1YZ','property')">EH1 1YZ · Edinburgh</span>
       <span class="ex" onclick="qS('Manchester','area')">Manchester</span>
       <span class="ex" onclick="qS('Cardiff','area')">Cardiff</span>
-      <span class="ex" onclick="qS('Glasgow','area')">Glasgow</span>
-      <span class="ex" onclick="qS('Leeds','area')">Leeds</span>
-      <span class="ex" onclick="qS('Belfast','area')">Belfast</span>
     </div>
   </div>
+
   <div class="layout" id="searchLayout">
     <div class="detail" style="grid-column:1/-1">
-      <div class="empty"><div style="font-size:34px;margin-bottom:10px">🔍</div><h3>Search any UK property</h3><p>Enter a full address or postcode for property-level intelligence, or a city / area for regional analysis.</p></div>
+      <div class="empty">
+        <div style="font-size:34px;margin-bottom:10px">🔍</div>
+        <h3>Search any UK property</h3>
+        <p>Enter a full address or postcode for property-level intelligence.</p>
+      </div>
     </div>
   </div>
 </div>
-
 <!-- ═══ TERRA ═══ -->
 <div id="page-terra" class="page">
   <div class="wrap">
