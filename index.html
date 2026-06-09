@@ -1103,20 +1103,37 @@ function selArea(name) {
 // ═══════════════════════════════════════
 // PROPERTY SEARCH
 // ═══════════════════════════════════════
-function rProp(q) {
-  propRes = [];
-  for (var i=0;i<8;i++) propRes.push(mkProp(i===0?q:q+'_v'+i));
-  var rows = '';
-  for (var i=0;i<propRes.length;i++) {
-    var pd=propRes[i];
-    rows += '<div class="rrow '+(i===0?'on':'')+'" onclick="showPD('+i+')">'
-      +'<div><div class="rn" style="font-size:12px">'+pd.pType+' · '+pd.beds+' bed · '+pd.tenure+'</div><div class="rs">'+pd.area.n+', '+pd.area.r+'</div></div>'
-      +'<div style="text-align:right"><div class="rp" style="font-size:14px">'+gp(pd.avm)+'</div><div class="rc" style="color:var(--green)">'+pd.gy+'%</div></div></div>';
+async function rProp(q) {
+  try {
+    document.getElementById('searchLayout').innerHTML =
+      '<div class="detail"><div class="empty"><h3>Loading property intelligence...</h3><p>Fetching live data from Terra Intelligence.</p></div></div>';
+
+    const res = await fetch(
+      `https://api.thevineville.com/api/property/lookup?postcode=${encodeURIComponent(q)}&apiKey=test123`
+    );
+
+    const data = await res.json();
+
+    document.getElementById('searchLayout').innerHTML =
+      '<div class="detail">' +
+      '<div class="dhdr">' +
+      '<div class="deye">Terra Intelligence · Live API</div>' +
+      '<div class="dtitle">' + data.postcode + '</div>' +
+      '<div class="dmeta">' +
+      '<span>' + (data.geography?.district || 'Unknown district') + '</span>' +
+      '<span>' + (data.geography?.region || 'Unknown region') + '</span>' +
+      '</div></div>' +
+      '<div class="tbody">' +
+      '<pre style="white-space:pre-wrap;font-size:12px;line-height:1.6;background:#f8f7f4;padding:16px;border:1px solid #ddd;">' +
+      JSON.stringify(data, null, 2) +
+      '</pre>' +
+      '</div></div>';
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('searchLayout').innerHTML =
+      '<div class="detail"><div class="empty"><h3>Property lookup failed</h3><p>Please try another postcode.</p></div></div>';
   }
-  document.getElementById('searchLayout').innerHTML =
-    '<div class="sidebar"><div class="sb-hd"><span class="sb-ct">8 properties</span></div><div class="rlist">'+rows+'</div></div>'
-    +'<div id="DP"></div>';
-  showPD(0);
 }
 
 function showPD(idx) {
