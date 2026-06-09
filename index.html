@@ -1103,13 +1103,17 @@ function selArea(name) {
 // ═══════════════════════════════════════
 // PROPERTY SEARCH
 // ═══════════════════════════════════════
-async function rProp(q) {
+function extractPostcode(input) {
+  var m = String(input || '').toUpperCase().match(/[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}/);
+  return m ? m[0] : input;
+}
+  async function rProp(q) {
   try {
     document.getElementById('searchLayout').innerHTML =
       '<div class="detail"><div class="empty"><h3>Loading property intelligence...</h3><p>Fetching live data from Terra Intelligence.</p></div></div>';
-
+    var postcode = extractPostcode(q);
     const res = await fetch(
-      `https://api.thevineville.com/api/property/lookup?postcode=${encodeURIComponent(q)}&apiKey=test123`
+      https://api.thevineville.com/api/property/lookup?postcode=${encodeURIComponent(postcode)}&apiKey=test123`
     );
 
     const data = await res.json();
