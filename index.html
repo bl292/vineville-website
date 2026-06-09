@@ -159,6 +159,93 @@ h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif;font-weight:400;line-hei
 .attr{background:#1C1C1A;padding:13px 20px;font-size:10px;color:#383834;text-align:center;line-height:2}
 @media(max-width:800px){.hero-in,.layout{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.cgrid{grid-template-columns:1fr}.wrap,.layout,.sbar,.hero{padding-left:13px;padding-right:13px}}
+.searchHero {
+  max-width: 980px;
+  margin: 34px auto 24px;
+  padding: 34px 36px;
+  background: var(--white);
+  border: 1px solid var(--bdr);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  text-align: center;
+}
+
+.searchEyebrow {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.searchHero h1 {
+  font-family: Georgia, serif;
+  font-size: 34px;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+
+.searchHero p {
+  max-width: 640px;
+  margin: 0 auto 22px;
+  color: var(--ink3);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.searchMode {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.searchBox {
+  display: flex;
+  gap: 10px;
+  max-width: 820px;
+  margin: 0 auto 12px;
+}
+
+.searchInput {
+  flex: 1;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--bdr);
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(196,160,74,0.12);
+}
+
+.searchButton {
+  min-height: 52px;
+  padding: 0 24px;
+  border: 0;
+  background: var(--gold);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  opacity: 0.92;
+}
+
+@media (max-width: 760px) {
+  .searchBox {
+    flex-direction: column;
+  }
+
+  .searchButton {
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
