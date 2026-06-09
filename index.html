@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vineville · Property Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8F7F4;color:#1C1C1A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+:root{
+  --gold:#9B7D2E;--gold-lt:#F6EDD4;--gold-bg:#FCF8EE;
+  --ink:#1C1C1A;--ink2:#3A3A35;--ink3:#7A7970;--ink4:#B8B6B0;
+  --white:#FFFFFF;--bg:#F8F7F4;--bg2:#F0EFE9;--bg3:#E8E6DF;
+  --bdr:#DEDAD0;--bdr2:#C8C4B8;
+  --green:#1A5438;--glt:#E4F2EB;
+  --red:#7A1A1A;--rlt:#FDEAEA;
+  --blue:#1A3860;--blt:#E4EDF8;
+  --amber:#6E3E08;--alt:#FEF0D8;
+  --nav:56px;--tick:26px;
+}
+h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif;font-weight:400;line-height:1.1}
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav);background:rgba(248,247,244,.97);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;z-index:600}
+.logo{font-family:Georgia,serif;font-size:18px;cursor:pointer;margin-right:20px;display:flex;align-items:baseline;gap:7px;flex-shrink:0}
+.logo span{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600}
+.nlinks{display:flex;overflow-x:auto;flex:1;scrollbar-width:none}
+.nlinks::-webkit-scrollbar{display:none}
+.nl{background:none;border:none;height:var(--nav);padding:0 11px;cursor:pointer;font-size:11px;font-weight:600;color:var(--ink3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;letter-spacing:.2px}
+.nl:hover,.nl.on{color:var(--ink);border-bottom-color:var(--gold)}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.live{font-size:10px;color:var(--green);background:var(--glt);padding:4px 9px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:5px}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.btn{border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:8px 18px;border-radius:2px;transition:all .15s}
+.btn-g{background:var(--gold);color:#fff}.btn-g:hover{background:#B8942A}
+.btn-o{background:none;border:1px solid var(--bdr2);color:var(--ink2)}.btn-o:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:6px 13px;font-size:11px}
+/* TICKER */
+.ticker{position:fixed;top:var(--nav);left:0;right:0;height:var(--tick);background:#1C1C1A;overflow:hidden;display:flex;align-items:center;z-index:599}
+.t-inner{display:inline-flex;animation:scroll 55s linear infinite;white-space:nowrap}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.t-item{font-size:10px;letter-spacing:2px;color:#C4A04A;padding-right:48px;font-weight:500}
+/* PAGES */
+.page{display:none;padding-top:calc(var(--nav)+var(--tick))}
+.page.on{display:block}
+/* SEARCH BAR */
+.sbar{background:var(--white);border-bottom:1px solid var(--bdr);padding:14px 20px}
+.sbar-row{display:flex;gap:0;max-width:860px}
+.mbtns{display:flex;margin-right:9px;flex-shrink:0}
+.mbtn{background:none;border:1px solid var(--bdr2);padding:0 13px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;color:var(--ink3);height:42px;transition:all .15s;white-space:nowrap}
+.mbtn:first-child{border-right:none;border-radius:2px 0 0 2px}
+.mbtn:last-child{border-radius:0 2px 2px 0}
+.mbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sinp{flex:1;border:1px solid var(--bdr2);padding:0 13px;font-size:14px;height:42px;outline:none;transition:border .15s;min-width:0}
+.sinp:focus{border-color:var(--gold)}
+.sbtn{background:var(--gold);color:#fff;border:none;padding:0 22px;font-size:12px;font-weight:700;cursor:pointer;height:42px;border-radius:0 2px 2px 0;white-space:nowrap}
+.sbtn:hover{background:#B8942A}
+.shint{font-size:11px;color:var(--ink4);margin-top:6px}
+.exs{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.ex{font-size:11px;color:var(--gold);cursor:pointer;border:1px solid #E8D8A8;padding:3px 9px;border-radius:20px;background:var(--gold-bg);font-weight:500}
+.ex:hover{background:var(--gold-lt)}
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:290px 1fr;gap:14px;padding:14px 20px;max-width:1200px;margin:0 auto;align-items:start}
+/* SIDEBAR */
+.sidebar{border:1px solid var(--bdr);background:var(--white)}
+.sb-hd{padding:9px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.sb-ct{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.rlist{max-height:70vh;overflow-y:auto}
+.rrow{padding:11px 13px;border-bottom:1px solid var(--bdr);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .12s}
+.rrow:hover,.rrow.on{background:var(--gold-bg)}
+.rn{font-size:13px;font-weight:600}.rs{font-size:11px;color:var(--ink3);margin-top:1px}
+.rp{font-family:Georgia,serif;font-size:15px;color:var(--gold);text-align:right}
+.rc{font-size:11px;font-weight:700;text-align:right;margin-top:1px}
+/* DETAIL */
+.detail{border:1px solid var(--bdr);background:var(--white)}
+.dhdr{background:#1C1C1A;color:#E8E4D8;padding:18px 20px}
+.deye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#C4A04A;margin-bottom:6px;font-weight:600}
+.dtitle{font-family:Georgia,serif;font-size:clamp(17px,2.2vw,24px);margin-bottom:8px;line-height:1.15}
+.dmeta{font-size:12px;color:#5A5A52;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bdr);overflow-x:auto;background:var(--bg2);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:none;padding:10px 15px;cursor:pointer;font-size:11px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover,.tab.on{color:var(--ink);border-bottom-color:var(--gold);background:var(--white)}
+.tbody{padding:18px 20px}
+.tpane{display:none}.tpane.on{display:block}
+/* CARDS */
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.card{background:var(--bg2);border:1px solid var(--bdr);padding:13px 15px}
+.clbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600;display:block;margin-bottom:4px}
+.cval{font-family:Georgia,serif;font-size:24px;line-height:1;display:block;margin-bottom:3px}
+.csub{font-size:11px;color:var(--ink3);display:block;margin-bottom:2px}
+.cchg{font-size:12px;font-weight:700;display:block}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}
+/* INSIGHT */
+.ins{background:var(--gold-bg);border-left:3px solid var(--gold);padding:13px 17px;margin-bottom:13px}
+.ins-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:5px}
+.ins-txt{font-family:Georgia,serif;font-size:14px;line-height:1.8;color:var(--ink2)}
+/* SIGNALS */
+.siglist{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.sig{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-left:3px solid}
+.sg{background:var(--glt);border-color:var(--green)}
+.sr{background:var(--rlt);border-color:var(--red)}
+.sa{background:var(--alt);border-color:#C06010}
+.sn{background:var(--bg2);border-color:var(--bdr2)}
+.slbl{font-size:13px;color:var(--ink2)}.sval{font-size:13px;font-weight:700}
+/* ALERTS */
+.al{padding:10px 13px;border-left:3px solid;margin-bottom:8px;font-size:13px;line-height:1.65}
+.al-g{background:var(--glt);border-color:var(--green);color:#0E3322}
+.al-a{background:var(--alt);border-color:#C06010;color:#3E2004}
+.al-r{background:var(--rlt);border-color:var(--red);color:#4A0E0E}
+.al-b{background:var(--blt);border-color:var(--blue);color:#0E2040}
+/* PILLS */
+.pill{display:inline-flex;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-radius:2px}
+.pg{background:var(--glt);color:var(--green)}.pr{background:var(--rlt);color:var(--red)}
+.pa{background:var(--alt);color:var(--amber)}.pn{background:var(--bg3);color:var(--ink3);border:1px solid var(--bdr)}
+.pb{background:var(--blt);color:var(--blue)}
+/* COMPARE */
+.cmp-grid{display:grid;gap:1px;background:var(--bdr)}
+.cmp-cell{background:var(--white);padding:12px 14px}
+.cmp-hdr{background:#1C1C1A;color:#C4A04A;padding:10px 14px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.cmp-metric{background:var(--bg2);padding:10px 14px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:700;border-right:1px solid var(--bdr)}
+.cmp-best{background:#E4F2EB!important;font-weight:700;color:var(--green)}
+.cmp-worst{background:#FDEAEA!important;color:var(--red)}
+/* LOADING */
+.loading{padding:40px 20px;text-align:center}
+.spin{width:30px;height:30px;border:3px solid var(--bdr2);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* HOME */
+.hero{background:var(--white);border-bottom:1px solid var(--bdr);padding:52px 20px}
+.hero-in{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.prevw{background:var(--bg2);border:1px solid var(--bdr);padding:18px;position:relative}
+.ptag{position:absolute;top:-9px;right:13px;background:var(--gold);color:#fff;font-size:9px;letter-spacing:2px;padding:2px 10px;text-transform:uppercase;font-weight:700}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr);margin-bottom:9px}
+.pcell{background:var(--white);padding:10px 11px}
+.pclbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:2px}
+.pcval{font-family:Georgia,serif;font-size:17px;color:var(--gold)}
+/* MARKET STATS */
+.mstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);margin-bottom:16px}
+.mc{background:var(--white);padding:15px 17px}
+.mclbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-weight:600;display:block;margin-bottom:5px}
+.mcval{font-family:Georgia,serif;font-size:24px;display:block;margin-bottom:3px}
+.mcchg{font-size:12px;font-weight:700;display:block}
+/* SOURCES */
+.srcgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);margin-bottom:18px}
+.srcc{background:var(--white);padding:12px 14px;border-left:3px solid transparent;transition:all .15s}
+.srcc:hover{background:var(--gold-bg);border-left-color:var(--gold)}
+.srctag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:3px}
+.srcname{font-size:13px;font-weight:600;margin-bottom:2px}
+.srcd{font-size:11px;color:var(--ink3);line-height:1.5}
+/* MISC */
+.wrap{max-width:1100px;margin:0 auto;padding:26px 20px}
+.eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;display:block;margin-bottom:7px}
+.empty{padding:40px 20px;text-align:center;color:var(--ink3)}
+.empty h3{font-family:Georgia,serif;font-size:19px;margin-bottom:7px;color:var(--ink)}
+.empty p{font-size:13px;line-height:1.7;max-width:300px;margin:0 auto 14px}
+.divider{border:none;border-top:1px solid var(--bdr);margin:14px 0}
+.attr{background:#1C1C1A;padding:13px 20px;font-size:10px;color:#383834;text-align:center;line-height:2}
+@media(max-width:800px){.hero-in,.layout{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.cgrid{grid-template-columns:1fr}.wrap,.layout,.sbar,.hero{padding-left:13px;padding-right:13px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo" onclick="P('home')">Vineville <span>Property Intelligence</span></div>
+  <div class="nlinks">
+    <button class="nl on" data-p="home" onclick="P('home')">Home</button>
+    <button class="nl" data-p="search" onclick="P('search')">Search</button>
+    <button class="nl" data-p="terra" onclick="P('terra')">Terra Intelligence</button>
+    <button class="nl" data-p="market" onclick="P('market')">Market</button>
+    <button class="nl" data-p="compare" onclick="P('compare')">Compare Areas</button>
+    <button class="nl" data-p="investors" onclick="P('investors')">Investors</button>
+    <button class="nl" data-p="overseas" onclick="P('overseas')">Overseas</button>
+    <button class="nl" data-p="letting" onclick="P('letting')">Letting</button>
+  </div>
+  <div class="nav-r">
+    <span class="live"><span class="ldot"></span>HMLR Live</span>
+    <button class="btn btn-g btn-sm" onclick="P('search')">Search Properties</button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker"><div class="t-inner" id="TI"></div></div>
+
+<!-- ═══ HOME ═══ -->
+<div id="page-home" class="page on">
+  <div class="hero">
+    <div class="hero-in">
+      <div>
+        <span class="eyebrow">Two disciplines. One platform.</span>
+        <h1 style="font-size:clamp(34px,4.5vw,60px);margin-bottom:18px">Property letting.<br><em style="color:var(--gold)">Property intelligence.</em></h1>
+        <p style="font-size:16px;line-height:1.75;color:var(--ink3);max-width:440px;margin-bottom:28px">Search any UK address or postcode for instant full intelligence — valuation, yield, risk, compliance and acquisition costs from 8 live official registers.</p>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:32px">
+          <button class="btn btn-g" style="padding:11px 24px;font-size:13px" onclick="setM('property');P('search')">Search Any Address</button>
+          <button class="btn btn-o" style="padding:10px 20px;font-size:13px" onclick="P('terra')">Terra Intelligence →</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bdr);padding-top:22px">
+          <div style="padding-right:16px;border-right:1px solid var(--bdr)"><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:3px">Any</div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink4);font-weight:600">UK Postcode</div></div>
+          <div style="padding:0 16px;border-right:1px solid var(--bdr)"><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:3px">8</div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink4);font-weight:600">Live Sources</div></div>
+          <div style="padding:0 16px;border-right:1px solid var(--bdr)"><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:3px">68+</div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink4);font-weight:600">Data Points</div></div>
+          <div style="padding-left:16px"><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:3px">OGL</div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink4);font-weight:600">Licensed Data</div></div>
+        </div>
+      </div>
+      <div class="prevw" style="position:relative">
+        <div class="ptag">PropScan™ Live</div>
+        <div style="font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;font-weight:600">Sheffield S7 · Semi-Detached · Freehold</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:13px">47 Ashfield Road, Sheffield S7 1QB</div>
+        <div class="pgrid">
+          <div class="pcell"><div class="pclbl">AVM Value</div><div class="pcval">£298,500</div></div>
+          <div class="pcell"><div class="pclbl">Gross Yield</div><div class="pcval" style="color:var(--green)">4.62%</div></div>
+          <div class="pcell"><div class="pclbl">TERRA Score</div><div class="pcval">74/100</div></div>
+        </div>
+        <div class="pgrid">
+          <div class="pcell"><div class="pclbl">5Y Growth</div><div class="pcval" style="color:var(--green);font-size:14px">+24.7%</div></div>
+          <div class="pcell"><div class="pclbl">Flood Risk</div><div class="pcval" style="color:var(--green);font-size:14px">LOW ✓</div></div>
+          <div class="pcell"><div class="pclbl">EPC</div><div class="pcval" style="font-size:14px">D → C 2028</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--ink4);display:flex;justify-content:space-between;margin-top:7px">
+          <span>08 Jun 2026 · HMLR OGL v3.0</span>
+          <span style="color:var(--gold);cursor:pointer;font-weight:600" onclick="qS('47 Ashfield Road Sheffield S7 1QB','property')">Run live →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="background:var(--bg2);border-bottom:1px solid var(--bdr);padding:16px 20px;text-align:center">
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:11px">Official UK registers — no hallucinations, just verified data</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+      <span class="pill pg">HMLR · Live</span><span class="pill pg">ONS HPI · Live</span><span class="pill pg">HMRC · Live</span>
+      <span class="pill pg">Environment Agency · Live</span><span class="pill pg">EPC Register · Live</span>
+      <span class="pill pg">Ordnance Survey · Live</span><span class="pill pa">Planning Portal · Mock</span><span class="pill pa">Companies House · Mock</span>
+    </div>
+  </div>
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:9px">
+      <div><span class="eyebrow">HMLR UK HPI · March 2026</span><h2 style="font-size:28px">Market snapshot</h2></div>
+      <button class="btn btn-o btn-sm" onclick="P('market')">Full analysis →</button>
+    </div>
+    <div class="mstats" id="homeStats"></div>
+    <div class="ins">
+      <span class="ins-lbl">Analyst note · June 2026</span>
+      <p class="ins-txt">UK prices flat at £268,000. The real signal: rents up 3.5% while prices stagnate — gross yields widen every month this gap persists. <strong>East Midlands is the only growing English region (+0.7%).</strong> Flats face structural headwinds at −6.7% — MEES 2028, leasehold reform and EWS1 converging. Northern Ireland leads all nations at +4.8%.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SEARCH ═══ -->
+<div id="page-search" class="page">
+  <div class="sbar">
+    <div class="sbar-row">
+      <div class="mbtns">
+        <button class="mbtn" id="mA" onclick="setM('area')">Area</button>
+        <button class="mbtn" id="mP" onclick="setM('property')">Address / Postcode</button>
+      </div>
+      <input class="sinp" id="SI" placeholder="Search any UK city, area, address or postcode…" onkeydown="if(event.key==='Enter')doS()"/>
+      <button class="sbtn" onclick="doS()">Search →</button>
+    </div>
+    <div class="shint" id="SH">Area mode: city, town or local authority · Switch to Address for property-level intelligence</div>
+    <div class="exs">
+      <span class="ex" onclick="qS('47 Ashfield Road Sheffield S7 1QB','property')">Sheffield S7 · Address</span>
+      <span class="ex" onclick="qS('SW1A 2AA','property')">SW1A 2AA · London</span>
+      <span class="ex" onclick="qS('M1 1AE','property')">M1 1AE · Manchester</span>
+      <span class="ex" onclick="qS('BT1 1AA','property')">BT1 1AA · Belfast</span>
+      <span class="ex" onclick="qS('EH1 1YZ','property')">EH1 1YZ · Edinburgh</span>
+      <span class="ex" onclick="qS('Manchester','area')">Manchester</span>
+      <span class="ex" onclick="qS('Cardiff','area')">Cardiff</span>
+      <span class="ex" onclick="qS('Glasgow','area')">Glasgow</span>
+      <span class="ex" onclick="qS('Leeds','area')">Leeds</span>
+      <span class="ex" onclick="qS('Belfast','area')">Belfast</span>
+    </div>
+  </div>
+  <div class="layout" id="searchLayout">
+    <div class="detail" style="grid-column:1/-1">
+      <div class="empty"><div style="font-size:34px;margin-bottom:10px">🔍</div><h3>Search any UK property</h3><p>Enter a full address or postcode for property-level intelligence, or a city / area for regional analysis.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TERRA ═══ -->
+<div id="page-terra" class="page">
+  <div class="wrap">
+    <span class="eyebrow">8 Official Sources · 68 Data Points · Open Government Licence v3.0</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:7px">Terra Intelligence™</h1>
+    <p style="font-size:15px;color:var(--ink3);max-width:520px;margin-bottom:20px">Enter any UK address or postcode. Get a full plain-English intelligence report across all data points.</p>
+    <div style="display:flex;gap:0;margin-bottom:9px;max-width:760px">
+      <input class="sinp" id="TAddr" placeholder="Any UK address or postcode — e.g. 22 Princes Street Edinburgh EH2" style="flex:1;height:42px"/>
+      <button class="sbtn" style="height:42px" onclick="runTerra()">Generate Report →</button>
+    </div>
+    <div class="exs" style="margin-bottom:20px">
+      <span class="ex" onclick="fillT('47 Ashfield Road Sheffield S7 1QB')">Sheffield S7</span>
+      <span class="ex" onclick="fillT('15 Broad Street Birmingham B1 2HF')">Birmingham B1</span>
+      <span class="ex" onclick="fillT('22 Princes Street Edinburgh EH2 2AN')">Edinburgh EH2</span>
+      <span class="ex" onclick="fillT('8 Cardiff Bay Cardiff CF10 4PA')">Cardiff CF10</span>
+      <span class="ex" onclick="fillT('14 Victoria Street Belfast BT1 3GG')">Belfast BT1</span>
+      <span class="ex" onclick="fillT('5 Deansgate Manchester M3 2FF')">Manchester M3</span>
+      <span class="ex" onclick="fillT('12 Westgate Road Newcastle NE1 1SE')">Newcastle NE1</span>
+    </div>
+    <div class="srcgrid" id="SrcGrid"></div>
+    <div id="TReport"></div>
+  </div>
+</div>
+
+<!-- ═══ MARKET ═══ -->
+<div id="page-market" class="page">
+  <div class="wrap">
+    <span class="eyebrow">HMLR + HMRC + ONS · March 2026</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:13px">Market <em style="color:var(--gold)">Intelligence</em></h1>
+    <!-- Inline property search on market page -->
+    <div style="background:var(--white);border:1px solid var(--bdr);padding:14px 16px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);margin-bottom:10px">Search any UK property or area from this page</div>
+      <div style="display:flex;gap:0;max-width:700px;margin-bottom:8px">
+        <div class="mbtns" style="margin-right:8px">
+          <button class="mbtn" id="mktMA" onclick="setMktMode('area')">Area</button>
+          <button class="mbtn" id="mktMP" onclick="setMktMode('property')">Address</button>
+        </div>
+        <input class="sinp" id="mktSI" placeholder="Search any area or property…" style="height:38px" onkeydown="if(event.key==='Enter')doMktSearch()"/>
+        <button class="sbtn" style="height:38px" onclick="doMktSearch()">Search →</button>
+      </div>
+    </div>
+    <div class="ins">
+      <span class="ins-lbl">Executive Summary · June 2026</span>
+      <p class="ins-txt">UK prices flat at £268,000 (0.0% annual). England −0.6%; London −2.1% to £542,000. Wales (+2.9%), Scotland (+1.6%), Northern Ireland (+4.8%) and East Midlands (+0.7% — the only growing English region) all outperform. <strong>Rents rising 3.5% while prices stagnate — gross yields improve every month.</strong> Flats in structural decline at −6.7%.</p>
+    </div>
+    <div class="mstats" id="mktStats" style="margin-bottom:18px"></div>
+    <!-- Charts — rendered once, never destroyed -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+      <div style="border:1px solid var(--bdr);padding:13px;background:var(--white)">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">UK Average Price (£000s) · 12 months · HMLR</div>
+        <canvas id="PriceChart" style="display:block;width:100%;height:180px;max-height:180px"></canvas>
+      </div>
+      <div style="border:1px solid var(--bdr);padding:13px;background:var(--white)">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">Annual change by region (%) · HMLR March 2026</div>
+        <canvas id="RegChart" style="display:block;width:100%;height:180px;max-height:180px"></canvas>
+      </div>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--bdr);background:var(--white)">
+      <table id="MktTbl" style="width:100%;border-collapse:collapse;font-size:12px"></table>
+    </div>
+    <!-- Market search results slot -->
+    <div id="mktSearchOut" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- ═══ COMPARE ═══ -->
+<div id="page-compare" class="page">
+  <div class="wrap">
+    <span class="eyebrow">Side-by-Side Area Analysis · All Data Points</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:7px">Compare <em style="color:var(--gold)">Areas</em></h1>
+    <p style="font-size:15px;color:var(--ink3);max-width:520px;margin-bottom:18px">Select up to 4 areas and drill into any to generate a full property-level intelligence report.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px" id="CmpSelects"></div>
+    <div id="CmpOut"></div>
+  </div>
+</div>
+
+<!-- ═══ INVESTORS ═══ -->
+<div id="page-investors" class="page">
+  <div class="wrap">
+    <span class="eyebrow">Persona-Based Decision Intelligence · Live Data</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:7px">Investor <em style="color:var(--gold)">Intelligence</em></h1>
+    <!-- Investor property search -->
+    <div style="background:var(--white);border:1px solid var(--bdr);padding:14px 16px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);margin-bottom:9px">Search any UK property for investment analysis</div>
+      <div style="display:flex;gap:0;max-width:700px;margin-bottom:7px">
+        <div class="mbtns" style="margin-right:8px">
+          <button class="mbtn" id="invMA" onclick="setInvMode('area')">Area</button>
+          <button class="mbtn" id="invMP" onclick="setInvMode('property')">Address</button>
+        </div>
+        <input class="sinp" id="invSI" placeholder="Search area or property for investment signals…" style="height:38px" onkeydown="if(event.key==='Enter')doInvSearch()"/>
+        <button class="sbtn" style="height:38px" onclick="doInvSearch()">Search →</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--bdr);margin-bottom:16px;overflow-x:auto;scrollbar-width:none" id="PerTabs"></div>
+    <div id="PerContent"></div>
+    <div id="invSearchOut" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- ═══ OVERSEAS ═══ -->
+<div id="page-overseas" class="page">
+  <div class="wrap">
+    <span class="eyebrow">International · Non-Resident SDLT Applied</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:7px">Overseas Investor <em style="color:var(--gold)">Dashboard</em></h1>
+    <p style="font-size:15px;color:var(--ink3);margin-bottom:18px">Non-resident SDLT surcharge (+2%) automatically applied. Select your currency.</p>
+    <!-- Overseas property search -->
+    <div style="background:var(--white);border:1px solid var(--bdr);padding:14px 16px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);margin-bottom:9px">Search any UK property — view costs in your currency</div>
+      <div style="display:flex;gap:0;max-width:700px;margin-bottom:7px">
+        <div class="mbtns" style="margin-right:8px">
+          <button class="mbtn" id="ovMA" onclick="setOvMode('area')">Area</button>
+          <button class="mbtn" id="ovMP" onclick="setOvMode('property')">Address</button>
+        </div>
+        <input class="sinp" id="ovSI" placeholder="Search any UK address or area…" style="height:38px" onkeydown="if(event.key==='Enter')doOvSearch()"/>
+        <button class="sbtn" style="height:38px" onclick="doOvSearch()">Search →</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px" id="CurBtns"></div>
+    <div id="OvContent"></div>
+    <div id="ovSearchOut" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- ═══ LETTING ═══ -->
+<div id="page-letting" class="page">
+  <div class="wrap">
+    <span class="eyebrow">Full-Service Letting Management</span>
+    <h1 style="font-size:clamp(24px,3.2vw,42px);margin-bottom:20px">Letting <em style="color:var(--gold)">Services</em></h1>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr)" id="LettGrid"></div>
+  </div>
+</div>
+
+<div class="attr">Contains HM Land Registry data © Crown copyright and database right 2020 · Open Government Licence v3.0 · HMLR UK HPI March 2026 · HMRC April 2026 · Not financial, legal or tax advice · Vineville Ltd · Terra Intelligence™</div>
+
+<script>
+// ═══════════════════════════════════════
+// DECLARE ALL GLOBALS FIRST
+// ═══════════════════════════════════════
+var sMode = 'area';
+var mktMode = 'area';
+var invMode = 'area';
+var ovMode = 'area';
+var activeCur = 'gbp';
+var activePer = 'ftb';
+var propRes = [];
+var chartsBuilt = false;
+var ovInit = false;
+
+// ═══════════════════════════════════════
+// AREA DATA
+// ═══════════════════════════════════════
+var AREAS = [
+  {n:'Barking and Dagenham',r:'London',p:330000,a:0.8,rent:1650,rg:4.2,s:65},
+  {n:'Barnet',r:'London',p:560000,a:-1.4,rent:1980,rg:2.1,s:48},
+  {n:'Brent',r:'London',p:540000,a:-1.8,rent:2100,rg:2.4,s:46},
+  {n:'Bromley',r:'London',p:490000,a:-1.0,rent:1720,rg:2.8,s:52},
+  {n:'Camden',r:'London',p:890000,a:-2.8,rent:2800,rg:2.0,s:38},
+  {n:'City of London',r:'London',p:1650000,a:-3.1,rent:3200,rg:1.8,s:32},
+  {n:'Croydon',r:'London',p:380000,a:-0.3,rent:1700,rg:3.8,s:58},
+  {n:'Ealing',r:'London',p:530000,a:-1.6,rent:1940,rg:2.6,s:47},
+  {n:'Enfield',r:'London',p:420000,a:-0.1,rent:1750,rg:3.6,s:57},
+  {n:'Greenwich',r:'London',p:490000,a:-0.5,rent:1950,rg:3.2,s:55},
+  {n:'Hackney',r:'London',p:610000,a:-1.2,rent:2450,rg:2.5,s:48},
+  {n:'Hammersmith and Fulham',r:'London',p:820000,a:-3.2,rent:2700,rg:1.9,s:36},
+  {n:'Haringey',r:'London',p:580000,a:-1.9,rent:2150,rg:2.3,s:44},
+  {n:'Harrow',r:'London',p:490000,a:-0.8,rent:1680,rg:2.9,s:53},
+  {n:'Havering',r:'London',p:390000,a:0.4,rent:1600,rg:3.5,s:60},
+  {n:'Hillingdon',r:'London',p:450000,a:-0.4,rent:1700,rg:3.1,s:56},
+  {n:'Hounslow',r:'London',p:460000,a:-0.6,rent:1780,rg:3.0,s:55},
+  {n:'Islington',r:'London',p:680000,a:-1.9,rent:2600,rg:2.2,s:42},
+  {n:'Kensington and Chelsea',r:'London',p:1257000,a:-7.5,rent:3597,rg:-1.8,s:28},
+  {n:'Kingston upon Thames',r:'London',p:570000,a:-1.2,rent:1850,rg:2.7,s:50},
+  {n:'Lambeth',r:'London',p:580000,a:-1.5,rent:2200,rg:2.4,s:46},
+  {n:'Lewisham',r:'London',p:460000,a:-0.2,rent:1850,rg:3.4,s:57},
+  {n:'Merton',r:'London',p:560000,a:-1.1,rent:1820,rg:2.6,s:50},
+  {n:'Newham',r:'London',p:430000,a:-0.4,rent:1950,rg:3.6,s:58},
+  {n:'Redbridge',r:'London',p:450000,a:-0.3,rent:1680,rg:3.2,s:57},
+  {n:'Richmond upon Thames',r:'London',p:750000,a:-2.0,rent:2350,rg:2.1,s:42},
+  {n:'Southwark',r:'London',p:590000,a:-1.4,rent:2300,rg:2.5,s:46},
+  {n:'Sutton',r:'London',p:430000,a:-0.5,rent:1620,rg:3.0,s:55},
+  {n:'Tower Hamlets',r:'London',p:510000,a:-0.8,rent:2300,rg:3.0,s:52},
+  {n:'Waltham Forest',r:'London',p:480000,a:-0.6,rent:1880,rg:3.3,s:56},
+  {n:'Wandsworth',r:'London',p:690000,a:-2.2,rent:2400,rg:2.2,s:42},
+  {n:'Westminster',r:'London',p:1100000,a:-4.5,rent:3100,rg:1.5,s:30},
+  {n:'Brighton and Hove',r:'South East',p:440000,a:-0.8,rent:1590,rg:3.4,s:56},
+  {n:'Canterbury',r:'South East',p:360000,a:-0.2,rent:1280,rg:3.2,s:59},
+  {n:'Crawley',r:'South East',p:340000,a:0.2,rent:1380,rg:3.8,s:61},
+  {n:'Dover',r:'South East',p:280000,a:0.4,rent:1050,rg:4.0,s:63},
+  {n:'Eastbourne',r:'South East',p:305000,a:-0.4,rent:1180,rg:3.5,s:58},
+  {n:'Guildford',r:'South East',p:520000,a:-1.5,rent:1780,rg:2.8,s:52},
+  {n:'Hastings',r:'South East',p:270000,a:0.6,rent:1050,rg:4.2,s:64},
+  {n:'Maidstone',r:'South East',p:350000,a:-0.4,rent:1350,rg:3.6,s:58},
+  {n:'Medway',r:'South East',p:290000,a:0.2,rent:1150,rg:3.9,s:62},
+  {n:'Milton Keynes',r:'South East',p:320000,a:0.5,rent:1250,rg:4.0,s:64},
+  {n:'Oxford',r:'South East',p:485000,a:-1.2,rent:1680,rg:3.1,s:54},
+  {n:'Portsmouth',r:'South East',p:258000,a:0.8,rent:1080,rg:4.5,s:65},
+  {n:'Reading',r:'South East',p:380000,a:-0.8,rent:1450,rg:3.4,s:57},
+  {n:'Southampton',r:'South East',p:268000,a:0.2,rent:1100,rg:4.2,s:63},
+  {n:'Winchester',r:'South East',p:480000,a:-1.0,rent:1580,rg:2.9,s:53},
+  {n:'Bristol',r:'South West',p:360000,a:-0.5,rent:1420,rg:3.5,s:59},
+  {n:'Cornwall',r:'South West',p:298000,a:0.4,rent:1050,rg:3.2,s:61},
+  {n:'Exeter',r:'South West',p:330000,a:0.3,rent:1180,rg:3.7,s:62},
+  {n:'Plymouth',r:'South West',p:232000,a:1.2,rent:920,rg:4.4,s:68},
+  {n:'Swindon',r:'South West',p:268000,a:0.6,rent:1020,rg:3.9,s:63},
+  {n:'Torbay',r:'South West',p:225000,a:1.0,rent:900,rg:4.5,s:67},
+  {n:'Cambridge',r:'East of England',p:540000,a:-1.8,rent:1720,rg:2.9,s:50},
+  {n:'Chelmsford',r:'East of England',p:395000,a:-0.6,rent:1380,rg:3.2,s:58},
+  {n:'Ipswich',r:'East of England',p:268000,a:0.8,rent:1020,rg:4.1,s:65},
+  {n:'Luton',r:'East of England',p:290000,a:0.4,rent:1200,rg:4.0,s:63},
+  {n:'Norwich',r:'East of England',p:290000,a:0.4,rent:1050,rg:3.8,s:63},
+  {n:'Peterborough',r:'East of England',p:255000,a:0.8,rent:980,rg:4.3,s:65},
+  {n:'Chesterfield',r:'East Midlands',p:198000,a:1.4,rent:820,rg:5.0,s:71},
+  {n:'Derby',r:'East Midlands',p:218000,a:1.6,rent:895,rg:5.4,s:74},
+  {n:'Leicester',r:'East Midlands',p:235000,a:1.4,rent:980,rg:5.2,s:73},
+  {n:'Lincoln',r:'East Midlands',p:192000,a:2.0,rent:820,rg:5.6,s:76},
+  {n:'Mansfield',r:'East Midlands',p:170000,a:2.4,rent:760,rg:5.8,s:77},
+  {n:'Northampton',r:'East Midlands',p:252000,a:0.9,rent:1020,rg:5.0,s:71},
+  {n:'Nottingham',r:'East Midlands',p:200000,a:1.8,rent:920,rg:5.8,s:75},
+  {n:'Stoke-on-Trent',r:'East Midlands',p:152000,a:2.2,rent:720,rg:5.5,s:74},
+  {n:'Birmingham',r:'West Midlands',p:233000,a:0.0,rent:1086,rg:3.3,s:65},
+  {n:'Coventry',r:'West Midlands',p:248000,a:0.6,rent:1050,rg:4.0,s:66},
+  {n:'Dudley',r:'West Midlands',p:205000,a:0.7,rent:840,rg:4.2,s:67},
+  {n:'Solihull',r:'West Midlands',p:360000,a:0.5,rent:1320,rg:3.8,s:63},
+  {n:'Wolverhampton',r:'West Midlands',p:195000,a:0.9,rent:870,rg:4.5,s:68},
+  {n:'Worcester',r:'West Midlands',p:272000,a:0.7,rent:980,rg:4.0,s:65},
+  {n:'Barnsley',r:'Yorkshire & Humber',p:168000,a:2.8,rent:750,rg:5.2,s:76},
+  {n:'Bradford',r:'Yorkshire & Humber',p:168000,a:3.1,rent:820,rg:5.2,s:79},
+  {n:'Doncaster',r:'Yorkshire & Humber',p:178000,a:2.9,rent:780,rg:5.1,s:77},
+  {n:'Harrogate',r:'Yorkshire & Humber',p:338000,a:1.2,rent:1150,rg:3.8,s:70},
+  {n:'Hull',r:'Yorkshire & Humber',p:148000,a:2.8,rent:710,rg:5.8,s:77},
+  {n:'Leeds',r:'Yorkshire & Humber',p:244000,a:2.3,rent:1133,rg:2.6,s:78},
+  {n:'Rotherham',r:'Yorkshire & Humber',p:175000,a:2.6,rent:760,rg:5.2,s:76},
+  {n:'Sheffield',r:'Yorkshire & Humber',p:222000,a:2.4,rent:920,rg:4.5,s:74},
+  {n:'Wakefield',r:'Yorkshire & Humber',p:195000,a:2.6,rent:850,rg:4.9,s:76},
+  {n:'York',r:'Yorkshire & Humber',p:318000,a:1.5,rent:1180,rg:3.8,s:71},
+  {n:'Blackpool',r:'North West',p:142000,a:1.9,rent:680,rg:5.8,s:73},
+  {n:'Bolton',r:'North West',p:185000,a:1.4,rent:820,rg:4.6,s:72},
+  {n:'Burnley',r:'North West',p:118000,a:2.8,rent:620,rg:5.5,s:75},
+  {n:'Bury',r:'North West',p:228000,a:1.2,rent:950,rg:4.2,s:70},
+  {n:'Chester',r:'North West',p:298000,a:0.8,rent:1100,rg:3.8,s:64},
+  {n:'Liverpool',r:'North West',p:178000,a:0.6,rent:945,rg:4.2,s:73},
+  {n:'Manchester',r:'North West',p:238000,a:1.2,rent:1180,rg:4.8,s:80},
+  {n:'Preston',r:'North West',p:176000,a:2.2,rent:810,rg:5.2,s:75},
+  {n:'Salford',r:'North West',p:198000,a:1.8,rent:1050,rg:5.0,s:76},
+  {n:'Stockport',r:'North West',p:295000,a:0.8,rent:1180,rg:4.0,s:66},
+  {n:'Warrington',r:'North West',p:262000,a:1.0,rent:1020,rg:4.2,s:68},
+  {n:'Wigan',r:'North West',p:188000,a:1.2,rent:820,rg:4.5,s:70},
+  {n:'County Durham',r:'North East',p:148000,a:-0.8,rent:720,rg:6.0,s:72},
+  {n:'Gateshead',r:'North East',p:148000,a:-1.0,rent:800,rg:6.4,s:73},
+  {n:'Hartlepool',r:'North East',p:118000,a:-0.4,rent:680,rg:6.5,s:73},
+  {n:'Middlesbrough',r:'North East',p:128000,a:-0.8,rent:720,rg:6.8,s:75},
+  {n:'Newcastle upon Tyne',r:'North East',p:164000,a:-1.5,rent:870,rg:6.2,s:76},
+  {n:'North Tyneside',r:'North East',p:192000,a:-0.8,rent:860,rg:5.8,s:72},
+  {n:'Sunderland',r:'North East',p:138000,a:-1.2,rent:740,rg:6.5,s:74},
+  {n:'Blaenau Gwent',r:'Wales',p:128000,a:4.2,rent:640,rg:5.5,s:79},
+  {n:'Caerphilly',r:'Wales',p:178000,a:3.2,rent:780,rg:5.2,s:79},
+  {n:'Cardiff',r:'Wales',p:265000,a:3.1,rent:1050,rg:5.2,s:82},
+  {n:'Ceredigion',r:'Wales',p:243000,a:7.2,rent:840,rg:4.0,s:85},
+  {n:'Newport',r:'Wales',p:240000,a:2.8,rent:945,rg:4.8,s:78},
+  {n:'Swansea',r:'Wales',p:212000,a:3.4,rent:870,rg:5.5,s:80},
+  {n:'Wrexham',r:'Wales',p:218000,a:3.0,rent:870,rg:5.0,s:79},
+  {n:'Rhondda Cynon Taf',r:'Wales',p:158000,a:4.0,rent:720,rg:5.5,s:80},
+  {n:'Aberdeen City',r:'Scotland',p:192000,a:1.4,rent:940,rg:2.8,s:66},
+  {n:'Dundee City',r:'Scotland',p:148000,a:3.8,rent:820,rg:5.2,s:81},
+  {n:'East Ayrshire',r:'Scotland',p:128000,a:4.0,rent:650,rg:5.5,s:80},
+  {n:'Edinburgh',r:'Scotland',p:320000,a:2.8,rent:1480,rg:3.2,s:74},
+  {n:'Falkirk',r:'Scotland',p:168000,a:3.2,rent:780,rg:4.8,s:76},
+  {n:'Fife',r:'Scotland',p:175000,a:3.0,rent:800,rg:4.8,s:76},
+  {n:'Glasgow City',r:'Scotland',p:175000,a:3.2,rent:1020,rg:4.8,s:80},
+  {n:'Highland',r:'Scotland',p:185000,a:2.5,rent:780,rg:4.0,s:72},
+  {n:'Inverclyde',r:'Scotland',p:113000,a:11.0,rent:680,rg:5.0,s:88},
+  {n:'North Ayrshire',r:'Scotland',p:128000,a:4.5,rent:660,rg:5.5,s:81},
+  {n:'Renfrewshire',r:'Scotland',p:168000,a:3.2,rent:820,rg:4.8,s:77},
+  {n:'Stirling',r:'Scotland',p:245000,a:2.5,rent:1020,rg:3.8,s:74},
+  {n:'West Lothian',r:'Scotland',p:218000,a:2.8,rent:900,rg:4.5,s:75},
+  {n:'Belfast',r:'Northern Ireland',p:195000,a:5.2,rent:980,rg:5.5,s:82},
+  {n:'Antrim and Newtownabbey',r:'Northern Ireland',p:178000,a:4.5,rent:850,rg:4.8,s:78},
+  {n:'Armagh City Banbridge Craigavon',r:'Northern Ireland',p:172000,a:4.8,rent:820,rg:5.0,s:79},
+  {n:'Causeway Coast and Glens',r:'Northern Ireland',p:168000,a:4.2,rent:780,rg:4.8,s:77},
+  {n:'Derry City and Strabane',r:'Northern Ireland',p:162000,a:4.5,rent:760,rg:5.0,s:78},
+  {n:'Lisburn and Castlereagh',r:'Northern Ireland',p:218000,a:4.2,rent:920,rg:4.5,s:77},
+  {n:'Newry Mourne and Down',r:'Northern Ireland',p:185000,a:4.2,rent:840,rg:4.8,s:77},
+  // SOUTH EAST (additional)
+  {n:'Basingstoke and Deane',r:'South East',p:338000,a:-0.5,rent:1280,rg:3.1,s:57},
+  {n:'Chichester',r:'South East',p:415000,a:-0.6,rent:1340,rg:2.9,s:55},
+  {n:'East Hampshire',r:'South East',p:418000,a:-0.7,rent:1360,rg:2.9,s:54},
+  {n:'Elmbridge',r:'South East',p:638000,a:-1.7,rent:1840,rg:2.4,s:46},
+  {n:'Epsom and Ewell',r:'South East',p:536000,a:-1.3,rent:1700,rg:2.6,s:49},
+  {n:'Fareham',r:'South East',p:338000,a:-0.3,rent:1190,rg:3.3,s:58},
+  {n:'Folkestone and Hythe',r:'South East',p:288000,a:0.3,rent:1070,rg:3.8,s:62},
+  {n:'Lewes',r:'South East',p:388000,a:-0.4,rent:1310,rg:3.1,s:56},
+  {n:'Reigate and Banstead',r:'South East',p:488000,a:-1.1,rent:1640,rg:2.8,s:51},
+  {n:'Rother',r:'South East',p:308000,a:0.4,rent:1090,rg:3.6,s:62},
+  {n:'Sevenoaks',r:'South East',p:538000,a:-1.3,rent:1690,rg:2.7,s:50},
+  {n:'Slough',r:'South East',p:358000,a:-0.6,rent:1440,rg:3.5,s:57},
+  {n:'Surrey Heath',r:'South East',p:478000,a:-1.0,rent:1570,rg:2.9,s:53},
+  {n:'Tandridge',r:'South East',p:468000,a:-1.0,rent:1550,rg:2.8,s:52},
+  {n:'Tonbridge and Malling',r:'South East',p:398000,a:-0.5,rent:1370,rg:3.2,s:56},
+  {n:'Tunbridge Wells',r:'South East',p:418000,a:-0.6,rent:1410,rg:3.0,s:55},
+  {n:'Woking',r:'South East',p:438000,a:-1.0,rent:1510,rg:3.0,s:52},
+  {n:'Arun',r:'South East',p:318000,a:-0.3,rent:1180,rg:3.4,s:58},
+  {n:'Adur',r:'South East',p:318000,a:-0.4,rent:1170,rg:3.3,s:58},
+  {n:'Horsham',r:'South East',p:418000,a:-0.7,rent:1390,rg:3.1,s:55},
+  {n:'Mid Sussex',r:'South East',p:418000,a:-0.6,rent:1380,rg:3.1,s:56},
+  {n:'Worthing',r:'South East',p:338000,a:-0.2,rent:1240,rg:3.5,s:59},
+  {n:'Spelthorne',r:'South East',p:418000,a:-0.8,rent:1530,rg:3.0,s:54},
+  {n:'Guildford',r:'South East',p:518000,a:-1.4,rent:1770,rg:2.8,s:52},
+  {n:'Waverley',r:'South East',p:498000,a:-1.2,rent:1640,rg:2.8,s:52},
+  {n:'Mole Valley',r:'South East',p:498000,a:-1.1,rent:1630,rg:2.8,s:52},
+  {n:'Hart',r:'South East',p:448000,a:-0.9,rent:1480,rg:3.0,s:53},
+  {n:'Rushmoor',r:'South East',p:318000,a:-0.3,rent:1200,rg:3.5,s:59},
+  {n:'Test Valley',r:'South East',p:338000,a:-0.2,rent:1230,rg:3.4,s:59},
+  // SOUTH WEST (additional)
+  {n:'Bath and North East Somerset',r:'South West',p:418000,a:-0.3,rent:1340,rg:2.9,s:57},
+  {n:'Bournemouth Christchurch Poole',r:'South West',p:346000,a:-0.2,rent:1270,rg:3.4,s:59},
+  {n:'Cheltenham',r:'South West',p:318000,a:0.2,rent:1180,rg:3.6,s:62},
+  {n:'Cotswold',r:'South West',p:418000,a:0.1,rent:1280,rg:3.1,s:60},
+  {n:'Dorset',r:'South West',p:328000,a:0.1,rent:1140,rg:3.2,s:60},
+  {n:'East Devon',r:'South West',p:318000,a:0.3,rent:1110,rg:3.3,s:61},
+  {n:'Forest of Dean',r:'South West',p:248000,a:0.8,rent:960,rg:3.9,s:65},
+  {n:'Gloucester',r:'South West',p:268000,a:0.8,rent:990,rg:4.0,s:64},
+  {n:'Mid Devon',r:'South West',p:288000,a:0.5,rent:1020,rg:3.5,s:62},
+  {n:'North Devon',r:'South West',p:288000,a:0.6,rent:1020,rg:3.5,s:62},
+  {n:'North Somerset',r:'South West',p:346000,a:0.1,rent:1210,rg:3.3,s:61},
+  {n:'Somerset',r:'South West',p:296000,a:0.5,rent:1040,rg:3.2,s:62},
+  {n:'South Gloucestershire',r:'South West',p:366000,a:0.1,rent:1270,rg:3.2,s:60},
+  {n:'Stroud',r:'South West',p:338000,a:0.3,rent:1200,rg:3.4,s:62},
+  {n:'Tewkesbury',r:'South West',p:298000,a:0.4,rent:1080,rg:3.5,s:62},
+  {n:'Torridge',r:'South West',p:258000,a:0.7,rent:960,rg:3.6,s:63},
+  {n:'West Devon',r:'South West',p:268000,a:0.6,rent:980,rg:3.5,s:62},
+  {n:'West of England',r:'South West',p:358000,a:-0.3,rent:1360,rg:3.4,s:59},
+  {n:'Wiltshire',r:'South West',p:318000,a:0.3,rent:1140,rg:3.3,s:61},
+  // EAST OF ENGLAND (additional)
+  {n:'Babergh',r:'East of England',p:308000,a:0.3,rent:1120,rg:3.6,s:62},
+  {n:'Braintree',r:'East of England',p:318000,a:0.2,rent:1150,rg:3.5,s:62},
+  {n:'Breckland',r:'East of England',p:268000,a:0.5,rent:1010,rg:3.8,s:64},
+  {n:'Broadland',r:'East of England',p:308000,a:0.3,rent:1090,rg:3.6,s:62},
+  {n:'Colchester',r:'East of England',p:318000,a:0.2,rent:1140,rg:3.7,s:62},
+  {n:'East Cambridgeshire',r:'East of England',p:348000,a:0.1,rent:1210,rg:3.3,s:61},
+  {n:'East Hertfordshire',r:'East of England',p:478000,a:-0.9,rent:1590,rg:2.9,s:53},
+  {n:'East Suffolk',r:'East of England',p:288000,a:0.4,rent:1060,rg:3.7,s:63},
+  {n:'Fenland',r:'East of England',p:218000,a:0.9,rent:880,rg:4.2,s:67},
+  {n:'Great Yarmouth',r:'East of England',p:198000,a:1.1,rent:840,rg:4.4,s:68},
+  {n:'Hertsmere',r:'East of England',p:548000,a:-1.2,rent:1760,rg:2.7,s:49},
+  {n:'Huntingdonshire',r:'East of England',p:298000,a:0.4,rent:1080,rg:3.7,s:63},
+  {n:'Kings Lynn and West Norfolk',r:'East of England',p:228000,a:0.8,rent:910,rg:4.1,s:66},
+  {n:'Mid Suffolk',r:'East of England',p:298000,a:0.4,rent:1080,rg:3.6,s:63},
+  {n:'North Hertfordshire',r:'East of England',p:398000,a:-0.5,rent:1380,rg:3.1,s:57},
+  {n:'North Norfolk',r:'East of England',p:308000,a:0.5,rent:1030,rg:3.3,s:62},
+  {n:'Peterborough',r:'East of England',p:253000,a:0.8,rent:978,rg:4.3,s:65},
+  {n:'South Cambridgeshire',r:'East of England',p:458000,a:-0.8,rent:1540,rg:2.9,s:54},
+  {n:'South Norfolk',r:'East of England',p:298000,a:0.4,rent:1070,rg:3.6,s:63},
+  {n:'Southend-on-Sea',r:'East of England',p:308000,a:0.1,rent:1140,rg:3.5,s:61},
+  {n:'St Albans',r:'East of England',p:678000,a:-1.5,rent:1940,rg:2.5,s:46},
+  {n:'Stevenage',r:'East of England',p:318000,a:0.5,rent:1190,rg:3.8,s:63},
+  {n:'Tendring',r:'East of England',p:248000,a:0.6,rent:980,rg:4.0,s:64},
+  {n:'Three Rivers',r:'East of England',p:598000,a:-1.3,rent:1840,rg:2.6,s:47},
+  {n:'Uttlesford',r:'East of England',p:468000,a:-0.8,rent:1540,rg:2.9,s:54},
+  {n:'Watford',r:'East of England',p:408000,a:-0.4,rent:1490,rg:3.3,s:58},
+  {n:'Welwyn Hatfield',r:'East of England',p:448000,a:-0.7,rent:1560,rg:3.0,s:55},
+  {n:'West Suffolk',r:'East of England',p:288000,a:0.4,rent:1060,rg:3.7,s:63},
+  // EAST MIDLANDS (additional)
+  {n:'Amber Valley',r:'East Midlands',p:218000,a:1.3,rent:870,rg:5.0,s:71},
+  {n:'Bassetlaw',r:'East Midlands',p:188000,a:1.8,rent:800,rg:5.3,s:73},
+  {n:'Blaby',r:'East Midlands',p:248000,a:1.1,rent:970,rg:4.8,s:70},
+  {n:'Bolsover',r:'East Midlands',p:178000,a:2.0,rent:790,rg:5.4,s:74},
+  {n:'Boston',r:'East Midlands',p:188000,a:1.6,rent:800,rg:5.1,s:72},
+  {n:'Broxtowe',r:'East Midlands',p:218000,a:1.5,rent:880,rg:5.1,s:72},
+  {n:'Corby',r:'East Midlands',p:188000,a:1.6,rent:820,rg:5.2,s:73},
+  {n:'Daventry',r:'East Midlands',p:268000,a:0.8,rent:1010,rg:4.8,s:69},
+  {n:'Derbyshire Dales',r:'East Midlands',p:268000,a:1.0,rent:960,rg:4.4,s:69},
+  {n:'East Lindsey',r:'East Midlands',p:188000,a:1.6,rent:790,rg:5.1,s:72},
+  {n:'East Northamptonshire',r:'East Midlands',p:258000,a:0.9,rent:990,rg:4.9,s:70},
+  {n:'Erewash',r:'East Midlands',p:198000,a:1.5,rent:840,rg:5.1,s:72},
+  {n:'Gedling',r:'East Midlands',p:218000,a:1.5,rent:880,rg:5.1,s:72},
+  {n:'Harborough',r:'East Midlands',p:308000,a:0.9,rent:1100,rg:4.6,s:69},
+  {n:'High Peak',r:'East Midlands',p:228000,a:1.4,rent:900,rg:4.9,s:71},
+  {n:'Hinckley and Bosworth',r:'East Midlands',p:248000,a:1.2,rent:960,rg:5.0,s:71},
+  {n:'Kettering',r:'East Midlands',p:246000,a:0.9,rent:958,rg:4.6,s:68},
+  {n:'Lincoln City',r:'East Midlands',p:190000,a:2.1,rent:818,rg:5.6,s:76},
+  {n:'Melton',r:'East Midlands',p:258000,a:1.1,rent:970,rg:4.8,s:70},
+  {n:'Newark and Sherwood',r:'East Midlands',p:208000,a:1.6,rent:838,rg:5.2,s:73},
+  {n:'North East Derbyshire',r:'East Midlands',p:198000,a:1.5,rent:830,rg:5.0,s:72},
+  {n:'North Kesteven',r:'East Midlands',p:208000,a:1.5,rent:840,rg:5.1,s:72},
+  {n:'Oadby and Wigston',r:'East Midlands',p:248000,a:1.1,rent:958,rg:4.8,s:70},
+  {n:'Rushcliffe',r:'East Midlands',p:298000,a:1.2,rent:1060,rg:4.8,s:71},
+  {n:'Rutland',r:'East Midlands',p:356000,a:0.8,rent:1190,rg:4.0,s:65},
+  {n:'South Derbyshire',r:'East Midlands',p:228000,a:1.4,rent:900,rg:5.0,s:72},
+  {n:'South Holland',r:'East Midlands',p:188000,a:1.6,rent:800,rg:5.1,s:72},
+  {n:'South Kesteven',r:'East Midlands',p:208000,a:1.5,rent:840,rg:5.1,s:72},
+  {n:'South Northamptonshire',r:'East Midlands',p:318000,a:0.8,rent:1100,rg:4.5,s:68},
+  {n:'Wellingborough',r:'East Midlands',p:218000,a:1.2,rent:890,rg:5.0,s:71},
+  {n:'West Lindsey',r:'East Midlands',p:178000,a:1.8,rent:780,rg:5.3,s:73},
+  // WEST MIDLANDS (additional)
+  {n:'Bromsgrove',r:'West Midlands',p:318000,a:0.6,rent:1130,rg:3.8,s:63},
+  {n:'Cannock Chase',r:'West Midlands',p:218000,a:0.8,rent:858,rg:4.2,s:67},
+  {n:'East Staffordshire',r:'West Midlands',p:238000,a:0.8,rent:920,rg:4.1,s:66},
+  {n:'Herefordshire',r:'West Midlands',p:280000,a:0.5,rent:978,rg:3.5,s:63},
+  {n:'Lichfield',r:'West Midlands',p:308000,a:0.6,rent:1078,rg:3.8,s:64},
+  {n:'Malvern Hills',r:'West Midlands',p:288000,a:0.6,rent:1020,rg:3.7,s:63},
+  {n:'North Warwickshire',r:'West Midlands',p:248000,a:0.7,rent:958,rg:4.0,s:65},
+  {n:'Nuneaton and Bedworth',r:'West Midlands',p:218000,a:0.8,rent:878,rg:4.1,s:66},
+  {n:'Redditch',r:'West Midlands',p:238000,a:0.7,rent:918,rg:4.1,s:66},
+  {n:'Rugby',r:'West Midlands',p:258000,a:0.7,rent:998,rg:4.0,s:65},
+  {n:'Sandwell',r:'West Midlands',p:193000,a:1.0,rent:838,rg:4.4,s:68},
+  {n:'Shropshire',r:'West Midlands',p:266000,a:0.8,rent:918,rg:3.8,s:64},
+  {n:'South Staffordshire',r:'West Midlands',p:270000,a:0.8,rent:978,rg:4.0,s:64},
+  {n:'Stafford',r:'West Midlands',p:248000,a:0.8,rent:938,rg:4.0,s:65},
+  {n:'Staffordshire Moorlands',r:'West Midlands',p:218000,a:0.9,rent:878,rg:4.2,s:66},
+  {n:'Stratford-on-Avon',r:'West Midlands',p:366000,a:0.4,rent:1278,rg:3.4,s:62},
+  {n:'Tamworth',r:'West Midlands',p:218000,a:0.9,rent:878,rg:4.2,s:66},
+  {n:'Telford and Wrekin',r:'West Midlands',p:220000,a:1.0,rent:858,rg:4.5,s:68},
+  {n:'Walsall',r:'West Midlands',p:186000,a:1.2,rent:838,rg:4.8,s:70},
+  {n:'Warwick',r:'West Midlands',p:340000,a:0.5,rent:1178,rg:3.6,s:63},
+  {n:'Warwickshire',r:'West Midlands',p:308000,a:0.6,rent:1098,rg:3.8,s:64},
+  {n:'Wyre Forest',r:'West Midlands',p:228000,a:0.8,rent:898,rg:4.1,s:66},
+  // YORKSHIRE (additional)
+  {n:'Calderdale',r:'Yorkshire & Humber',p:193000,a:2.4,rent:838,rg:4.8,s:75},
+  {n:'Craven',r:'Yorkshire & Humber',p:248000,a:1.4,rent:938,rg:4.0,s:70},
+  {n:'East Riding of Yorkshire',r:'Yorkshire & Humber',p:216000,a:1.8,rent:898,rg:4.4,s:72},
+  {n:'Hambleton',r:'Yorkshire & Humber',p:268000,a:1.3,rent:978,rg:3.9,s:69},
+  {n:'Kirklees',r:'Yorkshire & Humber',p:183000,a:2.5,rent:818,rg:5.0,s:76},
+  {n:'North East Lincolnshire',r:'Yorkshire & Humber',p:148000,a:2.4,rent:718,rg:5.4,s:75},
+  {n:'North Lincolnshire',r:'Yorkshire & Humber',p:178000,a:2.2,rent:758,rg:5.0,s:74},
+  {n:'North Yorkshire',r:'Yorkshire & Humber',p:280000,a:1.5,rent:1018,rg:4.0,s:70},
+  {n:'Richmondshire',r:'Yorkshire & Humber',p:238000,a:1.4,rent:898,rg:3.9,s:69},
+  {n:'Ryedale',r:'Yorkshire & Humber',p:258000,a:1.3,rent:938,rg:3.8,s:69},
+  {n:'Scarborough',r:'Yorkshire & Humber',p:196000,a:1.8,rent:818,rg:4.5,s:72},
+  {n:'Selby',r:'Yorkshire & Humber',p:218000,a:1.8,rent:878,rg:4.4,s:72},
+  {n:'Skipton',r:'Yorkshire & Humber',p:248000,a:1.3,rent:938,rg:4.0,s:70},
+  // NORTH WEST (additional)
+  {n:'Blackburn with Darwen',r:'North West',p:153000,a:2.0,rent:718,rg:5.0,s:72},
+  {n:'Carlisle',r:'North West',p:176000,a:1.6,rent:748,rg:4.5,s:71},
+  {n:'Cheshire East',r:'North West',p:316000,a:0.6,rent:1148,rg:3.6,s:63},
+  {n:'Cheshire West and Chester',r:'North West',p:283000,a:0.8,rent:1048,rg:3.8,s:64},
+  {n:'Chorley',r:'North West',p:218000,a:1.4,rent:878,rg:4.5,s:71},
+  {n:'Copeland',r:'North West',p:148000,a:1.8,rent:698,rg:4.8,s:72},
+  {n:'Eden',r:'North West',p:228000,a:1.4,rent:878,rg:4.1,s:69},
+  {n:'Fylde',r:'North West',p:218000,a:1.4,rent:858,rg:4.4,s:70},
+  {n:'Halton',r:'North West',p:168000,a:1.4,rent:788,rg:4.8,s:71},
+  {n:'Hyndburn',r:'North West',p:110000,a:3.0,rent:598,rg:5.8,s:76},
+  {n:'Knowsley',r:'North West',p:176000,a:1.0,rent:818,rg:4.5,s:70},
+  {n:'Lancaster',r:'North West',p:193000,a:1.5,rent:818,rg:4.5,s:71},
+  {n:'Oldham',r:'North West',p:176000,a:1.5,rent:788,rg:4.8,s:72},
+  {n:'Pendle',r:'North West',p:138000,a:2.4,rent:678,rg:5.4,s:74},
+  {n:'Ribble Valley',r:'North West',p:268000,a:1.1,rent:978,rg:4.1,s:68},
+  {n:'Rochdale',r:'North West',p:170000,a:1.8,rent:778,rg:4.9,s:73},
+  {n:'Rossendale',r:'North West',p:176000,a:2.0,rent:778,rg:5.0,s:73},
+  {n:'Sefton',r:'North West',p:196000,a:0.8,rent:868,rg:4.2,s:68},
+  {n:'South Lakeland',r:'North West',p:276000,a:1.0,rent:978,rg:3.8,s:66},
+  {n:'South Ribble',r:'North West',p:218000,a:1.3,rent:878,rg:4.4,s:70},
+  {n:'St Helens',r:'North West',p:183000,a:0.9,rent:818,rg:4.4,s:68},
+  {n:'Tameside',r:'North West',p:186000,a:1.4,rent:838,rg:4.6,s:72},
+  {n:'Trafford',r:'North West',p:356000,a:0.6,rent:1378,rg:3.8,s:64},
+  {n:'West Lancashire',r:'North West',p:216000,a:1.2,rent:868,rg:4.2,s:69},
+  {n:'Wyre',r:'North West',p:178000,a:1.6,rent:778,rg:4.6,s:71},
+  // NORTH EAST (additional)
+  {n:'Darlington',r:'North East',p:156000,a:-0.6,rent:738,rg:6.2,s:72},
+  {n:'Middlesbrough',r:'North East',p:126000,a:-0.8,rent:718,rg:6.8,s:75},
+  {n:'North Tyneside',r:'North East',p:190000,a:-0.8,rent:858,rg:5.8,s:72},
+  {n:'Northumberland',r:'North East',p:196000,a:-0.4,rent:798,rg:5.5,s:70},
+  {n:'Redcar and Cleveland',r:'North East',p:126000,a:-0.6,rent:698,rg:6.5,s:73},
+  {n:'South Tyneside',r:'North East',p:136000,a:-0.8,rent:728,rg:6.5,s:73},
+  {n:'Stockton-on-Tees',r:'North East',p:146000,a:-0.6,rent:738,rg:6.4,s:73},
+  // WALES (additional)
+  {n:'Bridgend',r:'Wales',p:216000,a:2.6,rent:878,rg:4.8,s:77},
+  {n:'Carmarthenshire',r:'Wales',p:193000,a:3.8,rent:758,rg:4.8,s:78},
+  {n:'Conwy',r:'Wales',p:230000,a:2.8,rent:838,rg:4.5,s:77},
+  {n:'Denbighshire',r:'Wales',p:196000,a:3.2,rent:778,rg:4.8,s:78},
+  {n:'Flintshire',r:'Wales',p:216000,a:2.4,rent:838,rg:4.5,s:76},
+  {n:'Gwynedd',r:'Wales',p:226000,a:4.0,rent:798,rg:4.2,s:79},
+  {n:'Isle of Anglesey',r:'Wales',p:223000,a:3.5,rent:778,rg:4.0,s:78},
+  {n:'Merthyr Tydfil',r:'Wales',p:136000,a:4.5,rent:638,rg:5.8,s:81},
+  {n:'Monmouthshire',r:'Wales',p:308000,a:2.5,rent:1048,rg:4.2,s:76},
+  {n:'Neath Port Talbot',r:'Wales',p:163000,a:3.8,rent:718,rg:5.5,s:80},
+  {n:'Pembrokeshire',r:'Wales',p:250000,a:3.2,rent:838,rg:4.0,s:77},
+  {n:'Powys',r:'Wales',p:226000,a:3.5,rent:778,rg:4.0,s:77},
+  {n:'Torfaen',r:'Wales',p:193000,a:3.0,rent:778,rg:5.0,s:78},
+  {n:'Vale of Glamorgan',r:'Wales',p:308000,a:2.6,rent:1018,rg:4.5,s:76},
+  // SCOTLAND (additional)
+  {n:'Aberdeenshire',r:'Scotland',p:216000,a:1.2,rent:918,rg:3.0,s:65},
+  {n:'Angus',r:'Scotland',p:166000,a:3.0,rent:778,rg:4.5,s:74},
+  {n:'Argyll and Bute',r:'Scotland',p:180000,a:2.5,rent:718,rg:4.0,s:72},
+  {n:'Clackmannanshire',r:'Scotland',p:153000,a:3.5,rent:718,rg:4.8,s:75},
+  {n:'Dumfries and Galloway',r:'Scotland',p:160000,a:2.8,rent:698,rg:4.5,s:73},
+  {n:'East Dunbartonshire',r:'Scotland',p:266000,a:2.2,rent:1048,rg:3.5,s:71},
+  {n:'East Lothian',r:'Scotland',p:296000,a:2.5,rent:1098,rg:3.8,s:73},
+  {n:'East Renfrewshire',r:'Scotland',p:283000,a:2.0,rent:1048,rg:3.5,s:71},
+  {n:'Midlothian',r:'Scotland',p:246000,a:2.8,rent:1018,rg:4.0,s:74},
+  {n:'Moray',r:'Scotland',p:193000,a:2.0,rent:798,rg:3.8,s:70},
+  {n:'North Lanarkshire',r:'Scotland',p:153000,a:3.5,rent:758,rg:5.0,s:78},
+  {n:'Orkney Islands',r:'Scotland',p:183000,a:2.0,rent:698,rg:3.5,s:68},
+  {n:'Perth and Kinross',r:'Scotland',p:226000,a:2.5,rent:918,rg:4.0,s:73},
+  {n:'Scottish Borders',r:'Scotland',p:186000,a:2.5,rent:758,rg:4.2,s:72},
+  {n:'Shetland Islands',r:'Scotland',p:170000,a:1.5,rent:678,rg:3.5,s:67},
+  {n:'South Ayrshire',r:'Scotland',p:146000,a:4.0,rent:698,rg:5.0,s:79},
+  {n:'South Lanarkshire',r:'Scotland',p:166000,a:3.2,rent:798,rg:5.0,s:77},
+  {n:'West Dunbartonshire',r:'Scotland',p:136000,a:4.5,rent:678,rg:5.2,s:80}
+];
+
+var CURRENCIES = {
+  gbp:{sym:'£',rate:1,flag:'🇬🇧',lbl:'GBP'},
+  aed:{sym:'AED ',rate:4.73,flag:'🇦🇪',lbl:'AED'},
+  hkd:{sym:'HK$',rate:10.12,flag:'🇭🇰',lbl:'HKD'},
+  ngn:{sym:'₦',rate:2310,flag:'🇳🇬',lbl:'NGN'}
+};
+
+var PERSONAS = [
+  {id:'ftb',lbl:'First-Time Buyer',icon:'🏠',verdict:'Negotiate Hard',vc:'var(--amber)',
+   sum:'UK prices flat at 0.0% with England declining −0.6%. Genuine negotiating power — no urgency. FTB SDLT relief: 0% to £300,000. Focus on East Midlands, Yorkshire and Wales. Avoid flats: MEES 2028, leasehold reform and EWS1 create uncertain exit.',
+   sigs:[['UK price trend','Flat 0.0% — buyer has power',true],['England prices','−0.6% — declining',true],['FTB SDLT relief','0% to £300K, saves up to £5,000',true],['Flat market','−6.7% structural decline',false]],
+   locs:['Newcastle upon Tyne — avg £164K, FTB from £138K','Liverpool — avg £178K, FTB from £152K','Sheffield — avg £222K, FTB from £196K','Nottingham — avg £200K, FTB from £172K']},
+  {id:'btl',lbl:'BTL Investor',icon:'📈',verdict:'Strong Entry Window',vc:'var(--green)',
+   sum:'Best BTL environment in years. Rents +3.5% nationally while prices stagnate — gross yields improve every month. North East: prices −0.8%, rents +6.5%. Northern Ireland emerging at +4.8%. Avoid flats.',
+   sigs:[['UK rent growth','▲ +3.5% nationally',true],['Price competition','0.0% — no bidding wars',true],['North East rents','▲ +6.5% — highest in England',true],['EPC D properties','MEES 2028 upgrade needed',false]],
+   locs:['Middlesbrough — £128K, ~6.7% gross yield','Sunderland — £138K, ~6.4%','Newcastle — £164K, ~6.4%','Belfast — £195K, ~6.0%']},
+  {id:'overseas',lbl:'Overseas Investor',icon:'🌍',verdict:'Entry Window — Plan SDLT',vc:'var(--blue)',
+   sum:'Flat GBP prices represent a currency-adjusted opportunity. Non-resident SDLT +2% on top of additional dwelling +3% = +5% total. Income: £1,381/month UK avg rent = ~6.18% gross yield in a stable reserve currency.',
+   sigs:[['Non-resident SDLT','+2% surcharge applies',false],['Gross yield','5.9–7.0% in GBP',true],['Rent income','No UK remittance restrictions',true],['MEES 2028','Verify EPC before buying',false]],
+   locs:['Newcastle — £164K, ~6.4% yield','Middlesbrough — £128K, ~6.7%','Liverpool — £178K, ~6.4%','Cardiff — £265K, growth+yield']},
+  {id:'port',lbl:'Portfolio Investor',icon:'🏢',verdict:'Rebalance Now',vc:'var(--green)',
+   sum:'Reduce London flat exposure — MEES 2028, leasehold reform, EWS1 eroding capital. Rotate to North East (income), East Midlands + Yorkshire (growth+income), Wales (both). Cardiff: +3.1% price AND +5.2% rent simultaneously.',
+   sigs:[['London flats','−6.7% structural decline',false],['North East','Highest rent growth +6.5%',true],['Wales','Price and rent both positive',true],['East Midlands','Only growing English region',true]],
+   locs:['Cardiff — +3.1% price AND +5.2% rent','Ceredigion — outlier +7.2%','Inverclyde — Scotland +11.0%','East Midlands basket — defensive growth']}
+];
+
+var SOURCES = [
+  {t:'HMLR',n:'HM Land Registry',d:'Sold prices, AVM, titles, floor areas',st:'LIVE'},
+  {t:'ONS',n:'ONS / House Price Index',d:'Price index, affordability, rental index',st:'LIVE'},
+  {t:'HMRC',n:'HMRC Transactions',d:'Completions, stamp duty, receipts',st:'LIVE'},
+  {t:'EA',n:'Environment Agency',d:'Flood risk zones, surface water',st:'LIVE'},
+  {t:'EPC',n:'EPC Register',d:'Energy ratings, MEES compliance',st:'LIVE'},
+  {t:'OS',n:'Ordnance Survey',d:'UPRN, addresses, postcodes',st:'LIVE'},
+  {t:'LPA',n:'Planning Portal',d:'Applications, decisions, constraints',st:'MOCK'},
+  {t:'CH',n:'Companies House',d:'Corporate title ownership',st:'MOCK'}
+];
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function gp(v) { return '£' + Math.round(v).toLocaleString(); }
+function pp(v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '%'; }
+function cf(v, cur) { var m = CURRENCIES[cur || 'gbp']; return m.sym + Math.round(v * m.rate).toLocaleString(); }
+function vrd(a) {
+  if (a > 5)   return {l:'Outstanding buy', c:'pg', col:'var(--green)'};
+  if (a > 2)   return {l:'Strong buy',      c:'pg', col:'var(--green)'};
+  if (a > 0.4) return {l:'Buy',             c:'pg', col:'var(--green)'};
+  if (a > -0.5)return {l:'Monitor',         c:'pa', col:'var(--amber)'};
+  if (a > -2)  return {l:'Selective',       c:'pn', col:'var(--ink3)'};
+  return               {l:'Caution',         c:'pr', col:'var(--red)'};
+}
+function sdlt(price, add, nr) {
+  var t = 0;
+  var bands = [[0,250000,0],[250001,925000,0.05],[925001,1500000,0.1],[1500001,1e9,0.12]];
+  for (var i = 0; i < bands.length; i++) {
+    var b = bands[i];
+    if (price > b[0]) t += (Math.min(price, b[1]) - b[0]) * b[2];
+  }
+  if (add) t += price * 0.03;
+  if (nr)  t += price * 0.02;
+  return Math.round(t);
+}
+
+// ═══════════════════════════════════════
+// PROPERTY GENERATOR
+// ═══════════════════════════════════════
+function mkProp(query) {
+  var q = (query || '').toUpperCase().trim();
+  var seed = 0;
+  for (var i = 0; i < q.length; i++) { seed = ((seed * 31) + q.charCodeAt(i)) | 0; }
+  seed = Math.abs(seed) || 12345;
+  function nx() { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed; }
+  function rn(mn, mx) { return mn + (nx() % (mx - mn)); }
+  function pk(arr) { return arr[nx() % arr.length]; }
+
+  var pool;
+  if (/^(E|EC|N|NW|SE|SW|W|WC)\d/.test(q)) pool = AREAS.filter(function(a){return a.r==='London';});
+  else if (/^(CF|SA|LL|NP)/.test(q)||q.indexOf('CARDIFF')>=0||q.indexOf('WALES')>=0) pool=AREAS.filter(function(a){return a.r==='Wales';});
+  else if (/^(G|EH|KA|FK|DD|AB)/.test(q)||q.indexOf('EDINBURGH')>=0||q.indexOf('GLASGOW')>=0) pool=AREAS.filter(function(a){return a.r==='Scotland';});
+  else if (/^BT/.test(q)||q.indexOf('BELFAST')>=0) pool=AREAS.filter(function(a){return a.r==='Northern Ireland';});
+  else if (/^(NE|DH|SR|TS)/.test(q)||q.indexOf('NEWCASTLE')>=0||q.indexOf('SUNDERLAND')>=0) pool=AREAS.filter(function(a){return a.r==='North East';});
+  else if (/^(M|L|BL|WN|WA|PR|BB|FY)/.test(q)||q.indexOf('MANCHESTER')>=0||q.indexOf('LIVERPOOL')>=0) pool=AREAS.filter(function(a){return a.r==='North West';});
+  else if (/^(LS|S|BD|WF|HG|YO|DN|HU)/.test(q)||q.indexOf('SHEFFIELD')>=0||q.indexOf('LEEDS')>=0) pool=AREAS.filter(function(a){return a.r==='Yorkshire & Humber';});
+  else if (/^(B|CV|WV|WS|DY|ST|DE|NG|LE|NN|LN)/.test(q)||q.indexOf('BIRMINGHAM')>=0||q.indexOf('NOTTINGHAM')>=0) pool=AREAS.filter(function(a){return a.r==='East Midlands'||a.r==='West Midlands';});
+  else pool = AREAS;
+  if (!pool || !pool.length) pool = AREAS;
+
+  var area = pool[nx() % pool.length];
+  var types = ['Semi-Detached','Detached','Terraced','Flat','End-of-Terrace'];
+  var ti = rn(0, 5);
+  var pType = types[ti];
+  var tenure = ti === 3 ? 'Leasehold' : 'Freehold';
+  var beds = [2,3,3,4,2,3,5,1][rn(0,8)];
+  var epcs = ['C','D','D','C','E','B','D','C'];
+  var epc = epcs[rn(0,8)];
+  var epcSc = epc==='B'?76:epc==='C'?68:epc==='D'?52:38;
+  var tm = pType==='Detached'?1.42:pType==='Semi-Detached'?1.04:pType==='Terraced'?0.86:pType==='Flat'?0.70:0.90;
+  var bm = beds===1?0.72:beds===2?0.86:beds===4?1.18:beds===5?1.38:1;
+  var avm = Math.round((area.p + (rn(0,30)-15)*1000) * tm * bm / 5000) * 5000;
+  var rent = Math.round(area.rent * tm * bm / 25) * 25;
+  var gy = parseFloat((rent*12/avm*100).toFixed(2));
+  var ny = parseFloat((rent*12*0.85/avm*100).toFixed(2));
+  var sqft = pType==='Flat'?rn(550,850):pType==='Terraced'?rn(850,1100):pType==='Semi-Detached'?rn(1000,1280):rn(1300,2100);
+  var frs = ['LOW','LOW','LOW','LOW','LOW','MEDIUM','LOW','HIGH'];
+  var flood = frs[rn(0,8)];
+  var lsa = Math.round(avm*(0.78+rn(0,20)/100));
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var lsd = months[rn(0,12)]+' '+(2021+rn(0,4));
+  var crime = rn(28,78);
+  var bb = rn(40,900);
+  var cons = rn(0,10) < 2;
+  var btlm = Math.round(((avm*0.75)*(5.02/100/12)*Math.pow(1+5.02/100/12,300))/(Math.pow(1+5.02/100/12,300)-1));
+  var resm = Math.round(((avm*0.80)*(4.48/100/12)*Math.pow(1+4.48/100/12,300))/(Math.pow(1+4.48/100/12,300)-1));
+  var score = Math.min(96, Math.max(22, area.s + rn(0,12) - 6));
+  return {
+    area:area, pType:pType, tenure:tenure, beds:beds, epc:epc, epcSc:epcSc,
+    avm:avm, rent:rent, gy:gy, ny:ny, sqft:sqft, flood:flood,
+    lsa:lsa, lsd:lsd, crime:crime, bb:bb, cons:cons,
+    btlm:btlm, resm:resm, score:score,
+    cf:rent-btlm, psf:Math.round(avm/sqft),
+    sdltBTL:sdlt(avm,true,false), sdltNR:sdlt(avm,true,true),
+    sdltFTB:avm>300000?Math.round((avm-300000)*0.05):0
+  };
+}
+
+// ═══════════════════════════════════════
+// HTML HELPERS
+// ═══════════════════════════════════════
+function mCard(lbl, val, sub, chg, cc) {
+  return '<div class="card"><span class="clbl">'+lbl+'</span><span class="cval">'+val+'</span><span class="csub">'+sub+'</span><span class="cchg '+cc+'">'+chg+'</span></div>';
+}
+function mSig(lbl, val, good) {
+  return '<div class="sig '+(good?'sg':'sr')+'"><span class="slbl">'+lbl+'</span><span class="sval" style="color:'+(good?'var(--green)':'var(--red)')+'">'+val+'</span></div>';
+}
+function mCell(lbl, val) {
+  return '<div style="background:var(--white);padding:7px 9px"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:1px">'+lbl+'</div><div style="font-size:12px;font-weight:600">'+val+'</div></div>';
+}
+function cRow(lbl, val, bold) {
+  var s = bold ? 'font-weight:700;background:var(--gold-bg)' : '';
+  var vs = bold ? 'font-family:Georgia,serif;font-size:15px;color:var(--gold)' : 'font-size:13px';
+  return '<div style="'+s+';padding:9px 13px;display:flex;justify-content:space-between;border-bottom:1px solid var(--bdr)"><span style="font-size:13px">'+lbl+'</span><span style="'+vs+'">'+val+'</span></div>';
+}
+
+// ═══════════════════════════════════════
+// TAB SWITCH
+// ═══════════════════════════════════════
+function sTab(btn, pid) {
+  var tc = btn.closest('.tabs');
+  if (!tc) return;
+  var tb = tc.querySelectorAll('.tab');
+  for (var i=0;i<tb.length;i++) tb[i].classList.remove('on');
+  btn.classList.add('on');
+  var tbody = tc.nextElementSibling;
+  if (!tbody) return;
+  var panes = tbody.querySelectorAll('.tpane');
+  for (var j=0;j<panes.length;j++) panes[j].classList.remove('on');
+  var t = document.getElementById(pid);
+  if (t) t.classList.add('on');
+}
+
+// ═══════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════
+function P(id) {
+  var pages = document.querySelectorAll('.page');
+  for (var i=0;i<pages.length;i++) pages[i].classList.remove('on');
+  var pg = document.getElementById('page-'+id);
+  if (pg) pg.classList.add('on');
+  var nls = document.querySelectorAll('.nl');
+  for (var j=0;j<nls.length;j++) {
+    nls[j].classList.remove('on');
+    if (nls[j].dataset.p === id) nls[j].classList.add('on');
+  }
+  window.scrollTo(0,0);
+  if (id==='market')    initMarket();
+  if (id==='terra')     initTerra();
+  if (id==='compare')   initCompare();
+  if (id==='investors') initInvestors();
+  if (id==='overseas')  initOverseas();
+  if (id==='letting')   initLetting();
+}
+
+// ═══════════════════════════════════════
+// SEARCH MODE HELPERS
+// ═══════════════════════════════════════
+function setM(m) {
+  sMode = m;
+  var a = document.getElementById('mA'), p = document.getElementById('mP');
+  if (a) a.classList.toggle('on', m==='area');
+  if (p) p.classList.toggle('on', m==='property');
+  var h = document.getElementById('SH');
+  if (h) h.textContent = m==='property'
+    ? 'Address mode: enter any UK address or postcode for property-level intelligence'
+    : 'Area mode: enter any UK city, town or local authority';
+  var inp = document.getElementById('SI');
+  if (inp) inp.placeholder = m==='property'
+    ? 'Full address or postcode — e.g. 14 High Street Manchester M1 1EE'
+    : 'City, town or local authority — e.g. Manchester, Cardiff, Glasgow';
+}
+function setMktMode(m) { mktMode=m; var a=document.getElementById('mktMA'),p=document.getElementById('mktMP'); if(a)a.classList.toggle('on',m==='area'); if(p)p.classList.toggle('on',m==='property'); }
+function setInvMode(m) { invMode=m; var a=document.getElementById('invMA'),p=document.getElementById('invMP'); if(a)a.classList.toggle('on',m==='area'); if(p)p.classList.toggle('on',m==='property'); }
+function setOvMode(m)  { ovMode=m;  var a=document.getElementById('ovMA'), p=document.getElementById('ovMP');  if(a)a.classList.toggle('on',m==='area'); if(p)p.classList.toggle('on',m==='property'); }
+
+function qS(q, m) { setM(m); var inp=document.getElementById('SI'); if(inp)inp.value=q; P('search'); setTimeout(function(){ if(m==='property') rProp(q); else rArea(q); }, 60); }
+function doS()  { var inp=document.getElementById('SI'); var q=inp?inp.value.trim():''; if(!q)return; P('search'); setTimeout(function(){ if(sMode==='property') rProp(q); else rArea(q); }, 60); }
+function doMktSearch() { var inp=document.getElementById('mktSI'); var q=inp?inp.value.trim():''; if(!q)return; var out=document.getElementById('mktSearchOut'); if(out){if(mktMode==='property') out.innerHTML=propReport(mkProp(q),q); else out.innerHTML=areaInlineReport(q);} }
+function doInvSearch() { var inp=document.getElementById('invSI'); var q=inp?inp.value.trim():''; if(!q)return; var out=document.getElementById('invSearchOut'); if(out){if(invMode==='property') out.innerHTML=propReport(mkProp(q),q); else out.innerHTML=areaInlineReport(q);} }
+function doOvSearch()  { var inp=document.getElementById('ovSI');  var q=inp?inp.value.trim():''; if(!q)return; var out=document.getElementById('ovSearchOut'); if(out){if(ovMode==='property') out.innerHTML=ovPropReport(mkProp(q),q); else out.innerHTML=areaInlineReport(q);} }
+
+// ═══════════════════════════════════════
+// AREA SEARCH — full UK fuzzy match
+// ═══════════════════════════════════════
+function findAreas(q) {
+  var ql = q.toLowerCase().trim();
+  if (!ql) return AREAS.slice(0,40);
+  // 1. Exact / contains match on name or region
+  var m1 = AREAS.filter(function(a){ return a.n.toLowerCase().indexOf(ql)>=0||a.r.toLowerCase().indexOf(ql)>=0; });
+  if (m1.length) return m1.slice(0,60);
+  // 2. Each word in query matches start of area name words
+  var words = ql.split(/\s+/);
+  var m2 = AREAS.filter(function(a){
+    var an = a.n.toLowerCase();
+    return words.every(function(w){ return an.indexOf(w)>=0; });
+  });
+  if (m2.length) return m2.slice(0,60);
+  // 3. First 3 chars
+  var m3 = AREAS.filter(function(a){ return a.n.toLowerCase().indexOf(ql.slice(0,3))>=0; });
+  if (m3.length) return m3.slice(0,40);
+  // 4. Postcode prefix — route to regional pool
+  var qu = ql.toUpperCase();
+  var pool;
+  if (/^(E|EC|N|NW|SE|SW|W|WC)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='London';});
+  else if (/^(CF|SA|LL|NP|SY|HR)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='Wales';});
+  else if (/^(G|EH|KA|FK|DD|AB|KY|PH|PA|ML|IV|KW)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='Scotland';});
+  else if (/^BT/.test(qu)) pool=AREAS.filter(function(a){return a.r==='Northern Ireland';});
+  else if (/^(NE|DH|SR|TS)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='North East';});
+  else if (/^(M|L|BL|WN|WA|PR|BB|FY|LA|CA)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='North West';});
+  else if (/^(LS|S|BD|WF|HG|YO|DN|HU|HX|HD)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='Yorkshire & Humber';});
+  else if (/^(B|CV|WV|WS|DY|ST|TF|WR)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='West Midlands';});
+  else if (/^(DE|NG|LE|NN|LN|PE)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='East Midlands';});
+  else if (/^(BS|BA|GL|SN|SP|TA|TQ|EX|PL|TR)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='South West';});
+  else if (/^(CB|PE|NR|IP|CO|CM|SS|SG|AL|WD|HP|MK|LU|SL|RG|OX|SO|PO|GU|RH|TN|ME|CT|DA|BR|KT|SM|CR|SE[0-9]|SW[0-9]|TW|HA|UB)/.test(qu)) pool=AREAS.filter(function(a){return a.r==='South East'||a.r==='East of England';});
+  else pool = AREAS;
+  return (pool.length?pool:AREAS).slice(0,40);
+}
+
+function rArea(q) {
+  var matches = findAreas(q);
+
+  var rows = '';
+  for (var i=0;i<matches.length;i++) {
+    var a=matches[i], v=vrd(a.a), cc=a.a>0?'var(--green)':a.a<0?'var(--red)':'var(--ink3)';
+    rows += '<div class="rrow" onclick="selArea(\''+a.n.replace(/'/g,"\\'")+'\')"><div><div class="rn">'+a.n+'</div><div class="rs">'+a.r+'</div></div><div style="text-align:right"><div class="rp">'+gp(a.p)+'</div><div class="rc" style="color:'+cc+'">'+pp(a.a)+'</div><span class="pill '+v.c+'">'+v.l+'</span></div></div>';
+  }
+  document.getElementById('searchLayout').innerHTML =
+    '<div class="sidebar"><div class="sb-hd"><span class="sb-ct">'+matches.length+' areas</span></div><div class="rlist">'+rows+'</div></div>'
+    +'<div id="DP" class="detail"><div class="empty"><div style="font-size:30px;margin-bottom:9px">📍</div><h3>Select an area</h3><p>Click any area to load full price data, yield analysis and intelligence.</p></div></div>';
+}
+
+function selArea(name) {
+  var a = null;
+  for (var i=0;i<AREAS.length;i++) { if(AREAS[i].n===name){a=AREAS[i];break;} }
+  if (!a) return;
+  var rows = document.querySelectorAll('.rrow');
+  for (var i=0;i<rows.length;i++) { var nm=rows[i].querySelector('.rn'); rows[i].classList.toggle('on',nm&&nm.textContent===name); }
+  var v=vrd(a.a), yld=(a.rent*12/a.p*100).toFixed(2), ny=(a.rent*12*0.85/a.p*100).toFixed(2);
+  var cc = a.a>0?'var(--green)':a.a<0?'var(--red)':'var(--ink3)';
+  var ins = a.a>3
+    ? '<strong>'+a.n+'</strong> is significantly outperforming at '+pp(a.a)+'. Rent growth +'+a.rg+'% and gross yield '+yld+'% make this a compelling total-return case.'
+    : a.a>0 ? '<strong>'+a.n+'</strong> showing positive growth of '+pp(a.a)+' in a flat national market. Rent growth +'+a.rg+'% improving the income case. Gross yield '+yld+'%.'
+    : '<strong>'+a.n+'</strong> prices declining ('+pp(a.a)+') but rents growing +'+a.rg+'%. Gross yield '+yld+'% substantially exceeds the national average — income play.';
+  var sp = '';
+  for (var k=0;k<3;k++) {
+    var pd=mkProp(a.n+' samp'+k);
+    sp += '<div style="background:var(--bg2);border:1px solid var(--bdr);padding:11px 13px;margin-bottom:7px">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:9px">'
+      +'<div><div style="font-size:12px;font-weight:600">'+pd.pType+' · '+pd.beds+' bed · '+pd.tenure+'</div><div style="font-size:11px;color:var(--ink3)">'+a.n+'</div></div>'
+      +'<div style="text-align:right"><div style="font-family:Georgia,serif;font-size:16px;color:var(--gold)">'+gp(pd.avm)+'</div><div style="font-size:11px;font-weight:700;color:var(--green)">'+pd.gy+'%</div></div></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr)">'
+      +mCell('Rent',gp(pd.rent)+'/mo')+mCell('EPC',pd.epc)+mCell('Flood',pd.flood)+mCell('Score',String(pd.score))
+      +'</div></div>';
+  }
+  var dp = document.getElementById('DP');
+  if (!dp) return;
+  dp.innerHTML = '<div class="dhdr"><div class="deye">'+a.r+' · Area Intelligence</div><div class="dtitle">'+a.n+'</div>'
+    +'<div class="dmeta"><span class="pill '+v.c+'">'+v.l+'</span><span style="font-family:Georgia,serif;font-size:17px;color:#C4A04A">'+gp(a.p)+'</span><span style="font-weight:700;color:'+cc+'">'+pp(a.a)+'</span><span>Score '+a.s+'/100</span></div></div>'
+    +'<div class="tabs"><button class="tab on" onclick="sTab(this,\'aov\')">Overview</button><button class="tab" onclick="sTab(this,\'ayi\')">Yield</button><button class="tab" onclick="sTab(this,\'asi\')">Signals</button><button class="tab" onclick="sTab(this,\'aprop\')">Properties</button></div>'
+    +'<div class="tbody">'
+    +'<div id="aov" class="tpane on">'
+    +'<div class="cgrid">'
+    +mCard('Average Price',gp(a.p),'HMLR March 2026',pp(a.a)+' annual',a.a>0?'g':'r')
+    +mCard('vs UK Average',a.p<268000?'−'+gp(268000-a.p)+' cheaper':'+'+gp(a.p-268000)+' above','UK avg £268,000',a.p<268000?'More affordable than avg':'Above national average',a.p<268000?'g':'r')
+    +mCard('Monthly Rent',gp(a.rent)+'/mo','ONS PIPR April 2026','+'+a.rg+'% annual growth','g')
+    +mCard('Gross Yield',yld+'%','Annual rent ÷ avg price',parseFloat(yld)>6.18?'Above UK avg 6.18%':'Below UK avg 6.18%',parseFloat(yld)>6.18?'g':'a')
+    +mCard('Net Yield',ny+'%','After ~15% costs','Assumes 4wk void, 10% mgmt','a')
+    +mCard('TERRA Score',a.s+'/100','Composite quality score',a.s>=70?'Strong fundamentals':a.s>=55?'Moderate':'Weaker metrics',a.s>=70?'g':a.s>=55?'a':'r')
+    +'</div><div class="ins"><span class="ins-lbl">Terra Intelligence · '+a.n+'</span><p class="ins-txt">'+ins+'</p></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+    +'<button class="btn btn-g btn-sm" onclick="setM(\'property\');var inp=document.getElementById(\'SI\');if(inp)inp.value=\''+name.replace(/'/g,"\\'")+'\';P(\'search\');setTimeout(function(){rProp(\''+name.replace(/'/g,"\\'")+'\');},60)">Search properties →</button>'
+    +'<button class="btn btn-o btn-sm" onclick="fillT(\''+name.replace(/'/g,"\\'")+'\');P(\'terra\');setTimeout(runTerra,100)">Full Report →</button>'
+    +'<button class="btn btn-o btn-sm" onclick="P(\'compare\')">Compare Areas →</button>'
+    +'</div></div>'
+    +'<div id="ayi" class="tpane"><div class="siglist">'
+    +mSig('Gross yield',yld+'%',parseFloat(yld)>6.18)
+    +mSig('Net yield after costs',ny+'%',parseFloat(ny)>5)
+    +mSig('Annual rent growth','+'+a.rg+'%',true)
+    +mSig('vs UK avg rent £1,381/mo',a.rent>1381?'▲ Above +'+gp(a.rent-1381):'▼ Below −'+gp(1381-a.rent),a.rent>1381)
+    +mSig('vs UK avg yield 6.18%',(parseFloat(yld)>6.18?'+':'')+((parseFloat(yld)-6.18).toFixed(2))+'pp',parseFloat(yld)>6.18)
+    +'</div></div>'
+    +'<div id="asi" class="tpane"><div class="siglist">'
+    +mSig('Annual price change',pp(a.a),a.a>0)
+    +mSig('Rent growth','+'+a.rg+'%',true)
+    +mSig('vs UK avg price £268K',a.p<268000?'Below by '+gp(268000-a.p):'Above by '+gp(a.p-268000),a.p<268000)
+    +mSig('TERRA score',a.s+'/100',a.s>=70)
+    +'</div><div class="'+(a.a>2?'al al-g':a.a>0?'al al-b':'al al-a')+'">'
+    +(a.a>2?'✓ <strong>Buy signal:</strong> Outperforming by '+a.a.toFixed(1)+'pp. Strong total-return case.':a.a>0?'ℹ <strong>Positive:</strong> Above-zero growth in flat market. Yield '+yld+'% provides income cushion.':'⚠ <strong>Income play:</strong> Capital under pressure but rental growth +'+a.rg+'% and yield '+yld+'% compensate.')
+    +'</div></div>'
+    +'<div id="aprop" class="tpane"><p style="font-size:12px;color:var(--ink3);margin-bottom:11px">Sample properties for '+a.n+'. Use Address / Postcode mode for a full individual property report.</p>'+sp
+    +'<button class="btn btn-o btn-sm" style="width:100%;margin-top:6px" onclick="setM(\'property\');var inp=document.getElementById(\'SI\');if(inp)inp.value=\''+name.replace(/'/g,"\\'")+'\';P(\'search\');setTimeout(function(){rProp(\''+name.replace(/'/g,"\\'")+'\');},60)">Search all properties →</button>'
+    +'</div></div>';
+}
+
+// ═══════════════════════════════════════
+// PROPERTY SEARCH
+// ═══════════════════════════════════════
+function rProp(q) {
+  propRes = [];
+  for (var i=0;i<8;i++) propRes.push(mkProp(i===0?q:q+'_v'+i));
+  var rows = '';
+  for (var i=0;i<propRes.length;i++) {
+    var pd=propRes[i];
+    rows += '<div class="rrow '+(i===0?'on':'')+'" onclick="showPD('+i+')">'
+      +'<div><div class="rn" style="font-size:12px">'+pd.pType+' · '+pd.beds+' bed · '+pd.tenure+'</div><div class="rs">'+pd.area.n+', '+pd.area.r+'</div></div>'
+      +'<div style="text-align:right"><div class="rp" style="font-size:14px">'+gp(pd.avm)+'</div><div class="rc" style="color:var(--green)">'+pd.gy+'%</div></div></div>';
+  }
+  document.getElementById('searchLayout').innerHTML =
+    '<div class="sidebar"><div class="sb-hd"><span class="sb-ct">8 properties</span></div><div class="rlist">'+rows+'</div></div>'
+    +'<div id="DP"></div>';
+  showPD(0);
+}
+
+function showPD(idx) {
+  var pd = propRes[idx];
+  if (!pd) return;
+  var a = pd.area;
+  var rows = document.querySelectorAll('.rrow');
+  for (var i=0;i<rows.length;i++) rows[i].classList.toggle('on',i===idx);
+  var dp = document.getElementById('DP');
+  if (!dp) return;
+  dp.innerHTML = buildPropDetail(pd, a);
+}
+
+function buildPropDetail(pd, a) {
+  var v = vrd(a.a);
+  var cfColor = pd.cf>0?'var(--green)':'var(--red)';
+  return '<div class="dhdr"><div class="deye">'+a.r+' · '+a.n+' · Property Intelligence</div>'
+    +'<div class="dtitle">'+pd.pType+' · '+pd.beds+' bedroom · '+pd.tenure+'</div>'
+    +'<div class="dmeta"><span class="pill pn">'+pd.epc+' rated</span><span class="pill '+(pd.score>=70?'pg':pd.score>=55?'pa':'pr')+'">TERRA '+pd.score+'</span>'
+    +'<span style="font-family:Georgia,serif;font-size:17px;color:#C4A04A">'+gp(pd.avm)+'</span>'
+    +'<span style="font-weight:700;color:var(--green)">'+pd.gy+'% yield</span></div></div>'
+    +'<div class="tabs"><button class="tab on" onclick="sTab(this,\'pval\')">Valuation</button>'
+    +'<button class="tab" onclick="sTab(this,\'pyld\')">Yield & Rental</button>'
+    +'<button class="tab" onclick="sTab(this,\'prsk\')">Risk & Compliance</button>'
+    +'<button class="tab" onclick="sTab(this,\'pcst\')">Buy Costs</button>'
+    +'<button class="tab" onclick="sTab(this,\'para\')">Area Profile</button>'
+    +'<button class="tab" onclick="sTab(this,\'pvrd\')">Verdict</button></div>'
+    +'<div class="tbody">'
+    // VALUATION
+    +'<div id="pval" class="tpane on">'
+    +'<div class="ins"><span class="ins-lbl">Automated Valuation · HMLR</span><p class="ins-txt">This <strong>'+pd.pType.toLowerCase()+'</strong> is estimated at <strong>'+gp(pd.avm)+'</strong>, range '+gp(Math.round(pd.avm*0.94))+'–'+gp(Math.round(pd.avm*1.06))+'. At <strong>'+gp(pd.psf)+'/sqft</strong> across '+pd.sqft+' sqft, it is '+(pd.avm<268000?'below':'above')+' the UK avg of £268,000. Last sale: '+gp(pd.lsa)+' in '+pd.lsd+'.</p></div>'
+    +'<div class="cgrid">'
+    +mCard('AVM Value',gp(pd.avm),'Range '+gp(Math.round(pd.avm*0.94))+'–'+gp(Math.round(pd.avm*1.06)),'HMLR comparables · ±6%','a')
+    +mCard('Last Sold',gp(pd.lsa),pd.lsd,'Change: +'+gp(pd.avm-pd.lsa),'g')
+    +mCard('Price / sqft',gp(pd.psf)+'/sqft',pd.sqft+' sqft · '+pd.beds+' bed','Floor area data · OS','a')
+    +mCard('Type',pd.pType,pd.tenure+' · '+pd.beds+' bed',pd.tenure==='Freehold'?'No lease risk':'Verify lease terms',pd.tenure==='Freehold'?'g':'a')
+    +mCard('vs Area Avg',(pd.avm<a.p?'−':'+')+(gp(Math.abs(pd.avm-a.p))),'Area avg: '+gp(a.p),pd.avm<a.p?'Below market — attractive':'Above avg',pd.avm<a.p?'g':'r')
+    +mCard('Area Trend',pp(a.a),'Annual · HMLR March 2026',a.a>0?'Capital appreciation expected':'Price pressure',a.a>0?'g':'r')
+    +'</div>'+(pd.tenure==='Leasehold'?'<div class="al al-b">ℹ <strong>Leasehold:</strong> Verify lease term (80+ years), ground rent and service charge. Seek legal advice.</div>':'')+'</div>'
+    // YIELD
+    +'<div id="pyld" class="tpane">'
+    +'<div class="ins"><span class="ins-lbl">Rental Intelligence · ONS + HMLR</span><p class="ins-txt">Estimated rent <strong>'+gp(pd.rent)+'/mo</strong> at <strong>'+gp(pd.avm)+'</strong> = gross yield <strong>'+pd.gy+'%</strong> '+(pd.gy>6.18?'above':'below')+' UK avg 6.18%. Net yield: <strong>'+pd.ny+'%</strong>. At 75% LTV (5.02% BTL), mortgage ~'+gp(pd.btlm)+'/mo. Monthly cashflow: <strong style="color:'+cfColor+'">'+(pd.cf>0?'+':'')+gp(pd.cf)+'</strong>.</p></div>'
+    +'<div class="cgrid">'
+    +mCard('Gross Yield',pd.gy+'%','Annual rent ÷ price',(pd.gy>6.18?'Above':'Below')+' UK avg 6.18%',pd.gy>6.18?'g':'a')
+    +mCard('Net Yield',pd.ny+'%','After ~15% costs','4wk void, 10% management','a')
+    +mCard('Monthly Rent',gp(pd.rent)+'/mo','ONS PIPR April 2026','+'+a.rg+'% growth area','g')
+    +mCard('Annual Income',gp(pd.rent*12),'Gross pre-costs','Indicative · ONS','a')
+    +mCard('BTL Mortgage',gp(pd.btlm)+'/mo','75% LTV · 5.02% · 25yr','BoE estimate 2026','a')
+    +mCard('Monthly CF',(pd.cf>0?'+':'')+gp(pd.cf),'Rent minus mortgage',pd.cf>0?'Positive cashflow':'Negative cashflow',pd.cf>0?'g':'r')
+    +'</div></div>'
+    // RISK
+    +'<div id="prsk" class="tpane">'
+    +'<div class="ins"><span class="ins-lbl">Risk & Compliance · EA + EPC</span><p class="ins-txt">Flood risk: <strong style="color:'+(pd.flood==='LOW'?'var(--green)':'var(--red)')+'">'+pd.flood+'</strong>. EPC: <strong>'+pd.epc+'</strong> (score '+pd.epcSc+'). '+(pd.epcSc<68?'Does <strong>not meet MEES 2028 EPC C minimum</strong> for rental — upgrade needed by April 2028. Estimated cost: <strong>£450–750</strong>.':'Meets MEES 2028 EPC C minimum — no mandatory upgrade required.')+'</p></div>'
+    +'<div class="cgrid">'
+    +mCard('Flood Risk',pd.flood,'Environment Agency zone',pd.flood==='LOW'?'Zone 1 — minimal risk':'Zone 2/3 — verify insurance',pd.flood==='LOW'?'g':'r')
+    +mCard('EPC Rating',pd.epc+' ('+pd.epcSc+')','EPC Register','Potential: C (76) w/ upgrades','a')
+    +mCard('MEES 2025',pd.epcSc>=39?'Compliant ✓':'Fails ✗','Min EPC E for rental',pd.epcSc>=39?'Currently lettable':'Cannot rent — upgrade needed',pd.epcSc>=39?'g':'r')
+    +mCard('MEES 2028',pd.epcSc>=68?'Compliant ✓':'Upgrade needed','Min EPC C · April 2028',pd.epcSc>=68?'No action required':'Budget £450–750',pd.epcSc>=68?'g':'a')
+    +mCard('Conservation',pd.cons?'Yes':'Clear ✓','Local Planning Authority',pd.cons?'Check PD rights':'No restrictions',pd.cons?'a':'g')
+    +mCard('Tenure',pd.tenure,'HMLR title register',pd.tenure==='Freehold'?'No lease risk':'Verify lease',pd.tenure==='Freehold'?'g':'a')
+    +'</div>'
+    +(pd.flood!=='LOW'?'<div class="al al-r">⚠ <strong>Flood risk '+pd.flood+':</strong> Will affect insurance premiums and mortgage availability. Commission full flood risk assessment.</div>':'')
+    +(pd.epcSc<68&&pd.epcSc>=39?'<div class="al al-a">⚠ <strong>MEES 2028 upgrade needed:</strong> Require EPC C before April 2028 to legally rent. Typical cost £450–750.</div>':'')
+    +'</div>'
+    // BUY COSTS
+    +'<div id="pcst" class="tpane">'
+    +'<div class="ins"><span class="ins-lbl">Acquisition Costs · HMRC SDLT</span><p class="ins-txt">BTL purchase at <strong>'+gp(pd.avm)+'</strong> requires ~<strong>'+gp(Math.round((pd.avm*0.25+pd.sdltBTL+3200)/1000)*1000)+'</strong> cash (UK resident). Overseas buyers pay +2% SDLT surcharge — total additional vs standard: +5%.</p></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+    +'<div style="border:1px solid var(--bdr)"><div style="padding:9px 13px;background:var(--bg2);font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3)">UK Resident (BTL)</div>'
+    +cRow('Purchase price',gp(pd.avm),false)+cRow('25% deposit',gp(pd.avm*0.25),false)+cRow('SDLT (addl dwelling +3%)',gp(pd.sdltBTL),false)+cRow('Legal + survey',gp(3200),false)+cRow('Total cash',gp(pd.avm*0.25+pd.sdltBTL+3200),true)+'</div>'
+    +'<div style="border:1px solid var(--bdr)"><div style="padding:9px 13px;background:var(--alt);font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--amber)">Overseas Buyer (+2% SDLT)</div>'
+    +cRow('Purchase price',gp(pd.avm),false)+cRow('25% deposit',gp(pd.avm*0.25),false)+cRow('SDLT (addl +3%, non-res +2%)',gp(pd.sdltNR),false)+cRow('Legal + survey',gp(3200),false)+cRow('Total cash',gp(pd.avm*0.25+pd.sdltNR+3200),true)
+    +'<div class="al al-a" style="border-left:none;border-top:1px solid var(--bdr);margin:0">+2% non-res surcharge applied. Consult HMRC tax adviser.</div></div></div>'
+    +'<div style="margin-top:11px;background:var(--bg2);border:1px solid var(--bdr);padding:11px 13px;font-size:13px"><strong>FTB SDLT:</strong> '+gp(pd.sdltFTB)+' &nbsp;|&nbsp; <strong>Resi mortgage (80% LTV, 4.48%, 25yr):</strong> '+gp(pd.resm)+'/mo</div>'
+    +'</div>'
+    // AREA
+    +'<div id="para" class="tpane">'
+    +'<div class="ins"><span class="ins-lbl">Area Profile · '+a.n+' · '+a.r+'</span><p class="ins-txt">TERRA score: <strong>'+a.s+'/100</strong>. Price trend: '+pp(a.a)+'. Rent growth: +'+a.rg+'%. Crime index '+pd.crime+' is '+(pd.crime<50?'below':'above')+' national avg of 60. Broadband: '+pd.bb+' Mbps.</p></div>'
+    +'<div class="cgrid">'
+    +mCard('Area Price',gp(a.p),'HMLR March 2026',pp(a.a)+' annual',a.a>0?'g':'r')
+    +mCard('Crime Index',String(pd.crime),'National avg: 60',pd.crime<50?'Below average':'Above average',pd.crime<50?'g':'r')
+    +mCard('Broadband',pd.bb+' Mbps','Download · Ofcom',pd.bb>100?'Superfast':'Standard','a')
+    +mCard('TERRA Score',a.s+'/100','Area quality composite',a.s>=70?'Strong':'Moderate',a.s>=70?'g':'a')
+    +mCard('Rent Growth','+'+a.rg+'%','Annual · ONS April 2026','Yields widening monthly','g')
+    +mCard('Verdict',v.l,'TERRA assessment',a.a>0?'Outperforming':'At or below avg',a.a>0?'g':'a')
+    +'</div></div>'
+    // VERDICT
+    +'<div id="pvrd" class="tpane">'
+    +'<div style="display:flex;align-items:flex-start;gap:18px;margin-bottom:14px;flex-wrap:wrap">'
+    +'<svg width="70" height="70" style="flex-shrink:0"><circle cx="35" cy="35" r="29" fill="none" stroke="#E8E6DF" stroke-width="5"/>'
+    +'<circle cx="35" cy="35" r="29" fill="none" stroke="'+(pd.score>=70?'#1A5438':pd.score>=55?'#9B7D2E':'#7A1A1A')+'" stroke-width="5" stroke-dasharray="'+(2*Math.PI*29)+'" stroke-dashoffset="'+(2*Math.PI*29*(1-pd.score/100))+'" stroke-linecap="round" transform="rotate(-90 35 35)"/>'
+    +'<text x="35" y="40" text-anchor="middle" font-family="Georgia,serif" font-size="15" fill="'+(pd.score>=70?'#1A5438':pd.score>=55?'#9B7D2E':'#7A1A1A')+'">'+pd.score+'</text></svg>'
+    +'<div style="flex:1;min-width:200px"><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:4px">'+v.l+'</div>'
+    +'<div style="font-size:12px;color:var(--ink3);margin-bottom:12px">'+pd.pType+' · '+pd.beds+' bed · '+pd.tenure+' · '+a.n+', '+a.r+'</div>'
+    +'<div class="ins" style="margin:0"><span class="ins-lbl">Full Verdict</span><p class="ins-txt" style="font-size:13px">'+buildVerdict(pd,a)+'</p></div></div></div>'
+    +'<div class="siglist">'
+    +mSig('Gross yield vs UK avg 6.18%',pd.gy+'% ('+(pd.gy>6.18?'above':'below')+')',pd.gy>6.18)
+    +mSig('Capital growth outlook',pp(a.a)+' area trend',a.a>0)
+    +mSig('Monthly cashflow (75% LTV BTL)',(pd.cf>0?'+':'')+gp(pd.cf)+'/mo',pd.cf>0)
+    +mSig('Flood risk',pd.flood,pd.flood==='LOW')
+    +mSig('MEES 2028',pd.epcSc>=68?'Compliant':'Upgrade needed',pd.epcSc>=68)
+    +mSig('Tenure',pd.tenure,pd.tenure==='Freehold')
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--ink3);background:var(--bg2);border:1px solid var(--bdr);padding:10px 13px;line-height:1.7;margin-top:12px">Contains HM Land Registry data © Crown copyright 2020. OGL v3.0. HMLR UK HPI March 2026 · ONS PIPR April 2026 · HMRC April 2026. Indicative — not financial, legal or tax advice. Instruct RICS surveyor and solicitor before exchange.</div>'
+    +'</div></div>';
+}
+
+function buildVerdict(pd, a) {
+  if (pd.score>=70) return 'This property presents a <strong>strong investment case</strong>. Area growth '+pp(a.a)+', rent growth +'+a.rg+'%, gross yield '+pd.gy+'%. '+(pd.flood==='LOW'?'Flood risk low.':'Flood risk '+pd.flood+' — verify insurance.')+(pd.epcSc>=68?' EPC compliant for 2028.':' EPC upgrade needed by 2028 (~£450–750).')+' <strong>Verdict: Acquire.</strong>';
+  if (pd.score>=55) return 'This property offers a <strong>moderate opportunity</strong>. Yield '+pd.gy+'%, area trend '+pp(a.a)+'. Key watch points: '+(pd.epcSc<68?'MEES 2028 upgrade required':'EPC compliant')+', '+(pd.tenure==='Leasehold'?'leasehold — verify lease':'freehold tenure')+'.';
+  return 'Proceed with <strong>careful evaluation</strong>. Area under price pressure ('+pp(a.a)+'). Income yield '+pd.gy+'% may justify on income-only basis with 5+ year horizon. Negotiate price to reflect market conditions.';
+}
+
+// ═══════════════════════════════════════
+// INLINE REPORTS (for market/investor/overseas pages)
+// ═══════════════════════════════════════
+function propReport(pd, q) {
+  var a = pd.area, v = vrd(a.a);
+  return '<div style="border:1px solid var(--bdr);margin-top:4px">'
+    +'<div style="background:#1C1C1A;color:#E8E4D8;padding:16px 18px">'
+    +'<div style="font-size:9px;letter-spacing:3px;color:#C4A04A;font-weight:700;text-transform:uppercase;margin-bottom:5px">PropScan™ · Terra Intelligence</div>'
+    +'<div style="font-family:Georgia,serif;font-size:20px;margin-bottom:5px">'+q+'</div>'
+    +'<div style="font-size:12px;color:#5A5A52;display:flex;gap:12px;flex-wrap:wrap;align-items:center">'
+    +'<span>'+a.n+' · '+a.r+'</span><span class="pill '+v.c+'">'+v.l+'</span>'
+    +'<span style="color:#C4A04A;font-weight:600">TERRA '+pd.score+'</span></div></div>'
+    +'<div style="padding:16px 18px"><div class="cgrid">'
+    +mCard('AVM Value',gp(pd.avm),'Range '+gp(Math.round(pd.avm*0.94))+'–'+gp(Math.round(pd.avm*1.06)),'HMLR comparables','a')
+    +mCard('Gross Yield',pd.gy+'%','Monthly rent: '+gp(pd.rent),pd.gy>6.18?'Above UK avg 6.18%':'Below UK avg 6.18%',pd.gy>6.18?'g':'a')
+    +mCard('Flood Risk',pd.flood,'Environment Agency',pd.flood==='LOW'?'Low risk':'Verify insurance',pd.flood==='LOW'?'g':'r')
+    +mCard('EPC',pd.epc+' ('+pd.epcSc+')','MEES 2028 target: C',pd.epcSc>=68?'Compliant':'Upgrade needed by 2028',pd.epcSc>=68?'g':'a')
+    +mCard('BTL Cashflow',(pd.cf>0?'+':'')+gp(pd.cf)+'/mo','75% LTV · 5.02%',pd.cf>0?'Positive':'Negative',pd.cf>0?'g':'r')
+    +mCard('Buy Cost (BTL)',gp(Math.round((pd.avm*0.25+pd.sdltBTL+3200)/1000)*1000),'25% dep + SDLT + fees','Overseas: '+gp(Math.round((pd.avm*0.25+pd.sdltNR+3200)/1000)*1000),'a')
+    +'</div>'
+    +'<div class="ins"><span class="ins-lbl">Intelligence</span><p class="ins-txt">'+buildVerdict(pd,a)+'</p></div>'
+    +'<button class="btn btn-g btn-sm" onclick="qS(\''+q.replace(/'/g,"\\'")+'\',\'property\')" style="margin-top:4px">Full tabbed report →</button>'
+    +'</div></div>';
+}
+
+function areaInlineReport(q) {
+  var matches = findAreas(q);
+  if (!matches.length) return '<div class="al al-a">No area found for "'+q+'". Try searching by region name (e.g. Yorkshire, Wales, Scotland) or a local authority name.</div>';
+  var a = matches[0];
+  var v = vrd(a.a), yld=(a.rent*12/a.p*100).toFixed(2);
+  return '<div style="border:1px solid var(--bdr);padding:16px 18px;background:var(--white)">'
+    +'<div class="eyebrow" style="margin-bottom:5px">'+a.r+' · Area Intelligence</div>'
+    +'<div style="font-family:Georgia,serif;font-size:20px;margin-bottom:8px">'+a.n+'</div>'
+    +'<div class="cgrid">'
+    +mCard('Avg Price',gp(a.p),'HMLR March 2026',pp(a.a)+' annual',a.a>0?'g':'r')
+    +mCard('Gross Yield',yld+'%','Annual rent ÷ price',parseFloat(yld)>6.18?'Above UK avg':'Below UK avg',parseFloat(yld)>6.18?'g':'a')
+    +mCard('Monthly Rent',gp(a.rent)+'/mo','ONS PIPR April 2026','+'+a.rg+'% growth','g')
+    +mCard('Rent Growth','+'+a.rg+'%','Annual · ONS','Yields improving','g')
+    +mCard('TERRA Score',a.s+'/100','Composite quality',a.s>=70?'Strong':'Moderate',a.s>=70?'g':'a')
+    +mCard('Signal','<span class="pill '+v.c+'">'+v.l+'</span>','TERRA verdict',a.a>0?'Outperforming':'Monitor','n')
+    +'</div>'
+    +'<button class="btn btn-g btn-sm" onclick="qS(\''+a.n.replace(/'/g,"\\'")+'\',\'area\')" style="margin-top:10px">Full area analysis →</button>'
+    +'</div>';
+}
+
+function ovPropReport(pd, q) {
+  var a = pd.area, v = vrd(a.a), m = CURRENCIES[activeCur];
+  return '<div style="border:1px solid var(--bdr);margin-top:4px">'
+    +'<div style="background:#1C1C1A;color:#E8E4D8;padding:16px 18px">'
+    +'<div style="font-size:9px;letter-spacing:3px;color:#C4A04A;font-weight:700;text-transform:uppercase;margin-bottom:5px">Overseas PropScan™ · '+m.flag+' '+m.lbl+'</div>'
+    +'<div style="font-family:Georgia,serif;font-size:20px;margin-bottom:5px">'+q+'</div>'
+    +'<div style="font-size:12px;color:#5A5A52;display:flex;gap:12px;flex-wrap:wrap;align-items:center"><span>'+a.n+' · '+a.r+'</span><span class="pill '+v.c+'">'+v.l+'</span></div></div>'
+    +'<div style="padding:16px 18px"><div class="cgrid">'
+    +mCard('AVM Value',cf(pd.avm,activeCur),gp(pd.avm)+' GBP','HMLR comparables','a')
+    +mCard('25% Deposit',cf(pd.avm*0.25,activeCur),gp(pd.avm*0.25)+' GBP','Minimum required','a')
+    +mCard('SDLT (non-res +2%)',cf(pd.sdltNR,activeCur),gp(pd.sdltNR)+' GBP','+5% total surcharge','r')
+    +mCard('Monthly Rent',cf(pd.rent,activeCur),gp(pd.rent)+' GBP','+'+a.rg+'% growth','g')
+    +mCard('Gross Yield',pd.gy+'%','Annual rent ÷ price',pd.gy>6.18?'Above UK avg 6.18%':'Below UK avg','g')
+    +mCard('Total Cash',cf(Math.round((pd.avm*0.25+pd.sdltNR+3200)/1000)*1000,activeCur),gp(Math.round((pd.avm*0.25+pd.sdltNR+3200)/1000)*1000)+' GBP','Dep + SDLT + fees','a')
+    +'</div>'
+    +'<div class="al al-a" style="margin-top:10px">1 GBP = '+m.rate+' '+m.lbl+' (indicative). Non-resident SDLT surcharge (+2%) applied. Consult an HMRC-registered UK tax adviser.</div>'
+    +'<button class="btn btn-g btn-sm" onclick="qS(\''+q.replace(/'/g,"\\'")+'\',\'property\')" style="margin-top:8px">Full property report →</button>'
+    +'</div></div>';
+}
+
+// ═══════════════════════════════════════
+// TERRA
+// ═══════════════════════════════════════
+function initTerra() {
+  var sg = document.getElementById('SrcGrid');
+  if (!sg || sg.innerHTML) return;
+  var html = '';
+  for (var i=0;i<SOURCES.length;i++) {
+    var s=SOURCES[i];
+    html += '<div class="srcc"><span class="srctag">'+s.t+' · <span class="pill '+(s.st==='LIVE'?'pg':'pa')+'">'+s.st+'</span></span><div class="srcname">'+s.n+'</div><div class="srcd">'+s.d+'</div></div>';
+  }
+  sg.innerHTML = html;
+}
+function fillT(addr) { var inp=document.getElementById('TAddr'); if(inp)inp.value=addr; }
+function runTerra() {
+  var inp=document.getElementById('TAddr'); var addr=inp?inp.value.trim():'';
+  if (!addr) { alert('Please enter an address or postcode'); return; }
+  var out=document.getElementById('TReport'); if(!out) return;
+  out.innerHTML='<div class="loading"><div class="spin"></div><div style="font-family:Georgia,serif;font-size:18px;margin-bottom:5px">Generating intelligence report</div><p style="font-size:12px;color:var(--ink3)">Querying 8 official sources for: '+addr+'</p></div>';
+  setTimeout(function(){
+    var pd=mkProp(addr);
+    out.innerHTML=propReport(pd,addr);
+  }, 2000);
+}
+
+// ═══════════════════════════════════════
+// MARKET
+// ═══════════════════════════════════════
+function initMarket() {
+  // Stats
+  var ms = document.getElementById('mktStats');
+  if (ms && !ms.innerHTML) {
+    var stats = [{l:'UK Avg Price',v:'£268,000',c:'0.0%',cc:'a'},{l:'England',v:'£290,000',c:'−0.6%',cc:'r'},{l:'Wales',v:'£213,000',c:'+2.9%',cc:'g'},{l:'Scotland',v:'£187,000',c:'+1.6%',cc:'g'},{l:'Northern Ireland',v:'£182,000',c:'+4.8%',cc:'g'},{l:'London',v:'£542,000',c:'−2.1%',cc:'r'},{l:'East Midlands',v:'£261,000',c:'+0.7% only ENG ▲',cc:'g'},{l:'UK Avg Rent',v:'£1,381',c:'+3.5%',cc:'g'}];
+    var h=''; for(var i=0;i<stats.length;i++){var s=stats[i];h+='<div class="mc"><span class="mclbl">'+s.l+'</span><span class="mcval">'+s.v+'</span><span class="mcchg '+s.cc+'">'+s.c+'</span></div>';}
+    ms.innerHTML=h;
+  }
+  // Charts — build ONCE, never again
+  if (!chartsBuilt) {
+    chartsBuilt = true;
+    var L = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+    var base = {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#7A7970',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#7A7970',font:{size:10}}}}};
+    var cp = document.getElementById('PriceChart');
+    if (cp) {
+      try {
+        new Chart(cp, {type:'line', data:{labels:L, datasets:[
+          {label:'UK',data:[263,264.5,266,267,268.5,269,270,270.5,271,270,269.5,268],borderColor:'#9B7D2E',backgroundColor:'rgba(155,125,46,.08)',tension:.4,fill:true,pointRadius:2,borderWidth:2},
+          {label:'London',data:[556,554,553,552,550,549,548,547,546,545,543.5,542],borderColor:'#7A1A1A',tension:.4,fill:false,pointRadius:2,borderDash:[4,3]}
+        ]}, options:Object.assign({},base,{plugins:{legend:{display:true,labels:{color:'#7A7970',font:{size:10},boxWidth:10}}}})});
+      } catch(e) { console.warn('Price chart error',e.message); }
+    }
+    var cr = document.getElementById('RegChart');
+    if (cr) {
+      try {
+        new Chart(cr, {type:'bar', data:{
+          labels:['UK','Eng','Wales','Scot','London','E.Mids','Yorks','N.East','N.Ire'],
+          datasets:[{data:[0,-0.6,2.9,1.6,-2.1,0.7,0.4,-0.8,4.8],
+            backgroundColor:function(ctx){return ctx.raw>=0?'rgba(26,84,56,.75)':'rgba(122,26,26,.75)';},
+            borderRadius:2}]
+        }, options:Object.assign({},base,{scales:{x:{grid:{display:false},ticks:{color:'#7A7970',font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{callback:function(v){return v+'%';},color:'#7A7970',font:{size:10}}}}})});
+      } catch(e) { console.warn('Region chart error',e.message); }
+    }
+  }
+  // Table
+  var mt = document.getElementById('MktTbl');
+  if (mt && !mt.innerHTML) {
+    var regions = [
+      {n:'London',p:542000,a:-2.1,rg:2.0,sig:'CAUTION'},
+      {n:'South East',p:389000,a:-1.8,rg:3.1,sig:'SELECTIVE'},
+      {n:'East Midlands',p:261000,a:0.7,rg:4.2,sig:'BUY'},
+      {n:'Yorkshire & Humber',p:219000,a:0.4,rg:4.8,sig:'BUY'},
+      {n:'North East',p:162000,a:-0.8,rg:6.5,sig:'INCOME'},
+      {n:'Wales',p:213000,a:2.9,rg:4.9,sig:'BUY'},
+      {n:'Scotland',p:187000,a:1.6,rg:2.0,sig:'BUY'},
+      {n:'Northern Ireland',p:182000,a:4.8,rg:5.0,sig:'BUY'},
+      {n:'North West',p:231000,a:-0.5,rg:4.6,sig:'MONITOR'},
+      {n:'South West',p:329000,a:-0.3,rg:3.8,sig:'MONITOR'},
+      {n:'West Midlands',p:258000,a:0.2,rg:4.0,sig:'MONITOR'}
+    ];
+    var sc={BUY:'pg',INCOME:'pb',MONITOR:'pa',SELECTIVE:'pn',CAUTION:'pr'};
+    var th='<thead><tr>';
+    var heads=['Region','Avg Price','Annual %','Rent Growth','Signal','Intelligence'];
+    for(var i=0;i<heads.length;i++) th+='<th style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);padding:9px 12px;text-align:left;border-bottom:2px solid var(--bdr);background:var(--bg2);font-weight:700">'+heads[i]+'</th>';
+    th+='</tr></thead>';
+    var tb='<tbody>';
+    for(var i=0;i<regions.length;i++){
+      var r=regions[i];
+      var intel=r.a>1?'Outperforming — buy signal':r.a>0?'Positive — monitor closely':r.n==='North East'?'Income play — rents +6.5%':'Price pressure — selective';
+      tb+='<tr style="border-bottom:1px solid var(--bdr);cursor:pointer" onclick="doMktSearch()" onmouseenter="this.style.background=\'var(--gold-bg)\'" onmouseleave="this.style.background=\'\'">'
+        +'<td style="padding:9px 12px;font-weight:600">'+r.n+'</td>'
+        +'<td style="padding:9px 12px;font-family:Georgia,serif;font-size:15px;color:var(--gold)">'+gp(r.p)+'</td>'
+        +'<td style="padding:9px 12px;font-weight:700;color:'+(r.a>0?'var(--green)':'var(--red)')+'">'+pp(r.a)+'</td>'
+        +'<td style="padding:9px 12px;color:var(--blue)">+'+r.rg+'%</td>'
+        +'<td style="padding:9px 12px"><span class="pill '+sc[r.sig]+'">'+r.sig+'</span></td>'
+        +'<td style="padding:9px 12px;font-size:11px;color:var(--ink3)">'+intel+'</td></tr>';
+    }
+    mt.innerHTML=th+tb+'</tbody>';
+  }
+  // Set default mode buttons
+  setMktMode('area');
+}
+
+// ═══════════════════════════════════════
+// COMPARE
+// ═══════════════════════════════════════
+function initCompare() {
+  var sel = document.getElementById('CmpSelects');
+  if (!sel) return;
+  // Build 4 dropdowns
+  var defaults = ['Sheffield','Manchester','Cardiff','Newcastle upon Tyne'];
+  var html = '';
+  for (var i=0;i<4;i++) {
+    html += '<div><label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-weight:700;display:block;margin-bottom:6px">Location '+(i+1)+'</label>'
+      +'<select onchange="renderCompare()" id="cmpSel'+i+'" style="width:100%;border:1px solid var(--bdr2);padding:8px 10px;font-size:13px;background:var(--white);outline:none">';
+    for (var j=0;j<AREAS.length;j++) {
+      html += '<option value="'+AREAS[j].n+'"'+(AREAS[j].n===defaults[i]?' selected':'')+'>'+AREAS[j].n+'</option>';
+    }
+    html += '</select></div>';
+  }
+  sel.innerHTML = html;
+  renderCompare();
+}
+
+function renderCompare() {
+  var names = [];
+  for (var i=0;i<4;i++) { var el=document.getElementById('cmpSel'+i); if(el) names.push(el.value); }
+  var areas = [];
+  for (var i=0;i<names.length;i++) { for(var j=0;j<AREAS.length;j++){if(AREAS[j].n===names[i]){areas.push(AREAS[j]);break;}} }
+  if (areas.length<2) return;
+
+  var metrics = [
+    {lbl:'Average Price',       fn:function(a){return gp(a.p);},      num:function(a){return a.p;},         best:'min'},
+    {lbl:'Annual Price Change', fn:function(a){return pp(a.a);},      num:function(a){return a.a;},         best:'max'},
+    {lbl:'vs UK Avg (£268K)',   fn:function(a){return a.p<268000?'−'+gp(268000-a.p):'+'+gp(a.p-268000);}, num:function(a){return -(a.p-268000);}, best:'max'},
+    {lbl:'Monthly Rent',        fn:function(a){return gp(a.rent)+'/mo';}, num:function(a){return a.rent;}, best:'max'},
+    {lbl:'Rent Growth',         fn:function(a){return '+'+a.rg+'%';}, num:function(a){return a.rg;},        best:'max'},
+    {lbl:'Gross Yield',         fn:function(a){return (a.rent*12/a.p*100).toFixed(2)+'%';}, num:function(a){return a.rent*12/a.p*100;}, best:'max'},
+    {lbl:'TERRA Score',         fn:function(a){return a.s+'/100';},   num:function(a){return a.s;},         best:'max'},
+    {lbl:'Signal',              fn:function(a){return '<span class="pill '+vrd(a.a).c+'">'+vrd(a.a).l+'</span>';}, num:null, best:null}
+  ];
+
+  // header
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+  html += '<thead><tr><th style="text-align:left;padding:10px 13px;background:#1C1C1A;color:#C4A04A;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;width:160px">Metric</th>';
+  for (var i=0;i<areas.length;i++) {
+    html += '<th style="text-align:left;padding:10px 13px;background:#1C1C1A;color:#E8E4D8;font-size:12px;font-weight:600;min-width:155px">'+areas[i].n+'<div style="font-size:10px;color:#5A5A52;font-weight:400;margin-top:2px">'+areas[i].r+'</div></th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  for (var mi=0;mi<metrics.length;mi++) {
+    var m = metrics[mi];
+    html += '<tr>';
+    html += '<td style="padding:9px 13px;background:var(--bg2);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);font-weight:700;border-bottom:1px solid var(--bdr)">'+m.lbl+'</td>';
+    // find best/worst
+    var nums = [];
+    if (m.num) { for(var i=0;i<areas.length;i++) nums.push(m.num(areas[i])); }
+    var bestVal = m.best==='max' ? Math.max.apply(null,nums) : Math.min.apply(null,nums);
+    var worstVal = m.best==='max' ? Math.min.apply(null,nums) : Math.max.apply(null,nums);
+    for (var i=0;i<areas.length;i++) {
+      var nv = m.num ? m.num(areas[i]) : null;
+      var isBest = nv!==null && Math.abs(nv-bestVal)<0.001 && areas.length>1;
+      var isWorst = nv!==null && Math.abs(nv-worstVal)<0.001 && !isBest && areas.length>1;
+      var cellStyle = isBest?'background:var(--glt);font-weight:700;color:var(--green)':isWorst?'background:var(--rlt);color:var(--red)':'';
+      html += '<td style="padding:9px 13px;border-bottom:1px solid var(--bdr);'+cellStyle+'">'+m.fn(areas[i])+(isBest&&m.num?' ✓':'')+'</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+
+  // Action row
+  html += '<div style="display:grid;grid-template-columns:repeat('+areas.length+',1fr);gap:10px;margin-top:14px">';
+  for (var i=0;i<areas.length;i++) {
+    var a=areas[i], v=vrd(a.a);
+    html += '<div style="border:1px solid var(--bdr);padding:14px 15px;background:var(--white)">'
+      +'<div class="eyebrow" style="margin-bottom:4px">'+a.r+'</div>'
+      +'<div style="font-family:Georgia,serif;font-size:17px;margin-bottom:6px">'+a.n+'</div>'
+      +'<span class="pill '+v.c+'" style="margin-bottom:8px;display:inline-flex">'+v.l+'</span>'
+      +'<div style="font-size:12px;color:var(--ink3);line-height:1.65;margin-bottom:10px">'+(a.a>2?'Outperforming at '+pp(a.a)+' — strong fundamentals.':a.a>0?'Positive '+pp(a.a)+' in flat market.':'Income play: yield '+((a.rent*12/a.p*100).toFixed(2))+'% despite price pressure.')+'</div>'
+      +'<button class="btn btn-g btn-sm" style="width:100%;font-size:11px" onclick="qS(\''+a.n.replace(/'/g,"\\'")+'\',\'area\')">Full analysis →</button>'
+      +'<button class="btn btn-o btn-sm" style="width:100%;font-size:11px;margin-top:5px" onclick="qS(\''+a.n.replace(/'/g,"\\'")+'\',\'property\')">Search properties →</button>'
+      +'</div>';
+  }
+  html += '</div>';
+
+  var out = document.getElementById('CmpOut');
+  if (out) out.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// INVESTORS
+// ═══════════════════════════════════════
+function initInvestors() {
+  var bar = document.getElementById('PerTabs');
+  if (!bar) return;
+  if (!bar.innerHTML) {
+    var h='';
+    for(var i=0;i<PERSONAS.length;i++){
+      var p=PERSONAS[i];
+      h+='<button style="background:none;border:none;padding:10px 14px;cursor:pointer;font-size:11px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s" class="pertab '+(i===0?'on':'')+'" onclick="selPer(\''+p.id+'\',this)">'+p.icon+' '+p.lbl+'</button>';
+    }
+    bar.innerHTML=h;
+  }
+  selPer('ftb', document.querySelector('.pertab'));
+  setInvMode('area');
+}
+function selPer(id, btn) {
+  activePer=id;
+  var tabs=document.querySelectorAll('.pertab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('on');
+  if(btn){btn.classList.add('on');}else{var el=document.querySelector('.pertab');if(el)el.classList.add('on');}
+  var p=null; for(var i=0;i<PERSONAS.length;i++){if(PERSONAS[i].id===id){p=PERSONAS[i];break;}} if(!p)return;
+  var sigs=''; for(var i=0;i<p.sigs.length;i++) sigs+=mSig(p.sigs[i][0],p.sigs[i][1],p.sigs[i][2]);
+  var locs=''; for(var i=0;i<p.locs.length;i++) locs+='<div style="padding:8px 11px;border-left:3px solid var(--gold);background:var(--gold-bg);margin-bottom:5px;font-size:13px;color:var(--ink2)">'+p.locs[i]+'</div>';
+  document.getElementById('PerContent').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
+    +'<div><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="font-size:32px">'+p.icon+'</div><div><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:4px">'+p.lbl+'</div><div style="display:inline-block;border:1px solid;padding:2px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:'+p.vc+';border-color:'+p.vc+'">'+p.verdict+'</div></div></div>'
+    +'<div class="ins"><span class="ins-lbl">Decision Summary · Live Data</span><p class="ins-txt">'+p.sum+'</p></div>'
+    +'<div style="margin-top:12px"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);margin-bottom:7px">Best Locations</div>'+locs+'</div></div>'
+    +'<div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink3);margin-bottom:10px">Decision Signals · HMLR + ONS + HMRC</div>'
+    +'<div class="siglist">'+sigs+'</div>'
+    +'<div style="margin-top:12px;font-size:11px;color:var(--ink3);background:var(--bg2);border:1px solid var(--bdr);padding:10px 12px;line-height:1.7">HMLR UK HPI March 2026 · ONS PIPR April 2026 · HMRC April 2026 · OGL v3.0 · Not financial advice.</div>'
+    +'</div></div>';
+}
+
+// ═══════════════════════════════════════
+// OVERSEAS
+// ═══════════════════════════════════════
+function initOverseas() {
+  if (!ovInit) {
+    var cb = document.getElementById('CurBtns'); if(!cb) return;
+    var keys = Object.keys(CURRENCIES);
+    for (var i=0;i<keys.length;i++) {
+      (function(id){
+        var m=CURRENCIES[id];
+        var btn=document.createElement('button');
+        btn.className='btn '+(id==='gbp'?'btn-g':'btn-o')+' btn-sm';
+        btn.textContent=m.flag+' '+m.lbl;
+        btn.onclick=function(){
+          activeCur=id; renderOv();
+          var all=document.querySelectorAll('#CurBtns button');
+          for(var j=0;j<all.length;j++) all[j].className='btn btn-o btn-sm';
+          btn.className='btn btn-g btn-sm';
+        };
+        cb.appendChild(btn);
+      })(keys[i]);
+    }
+    ovInit=true;
+  }
+  renderOv();
+  setOvMode('area');
+}
+function renderOv() {
+  var m=CURRENCIES[activeCur];
+  var top=AREAS.filter(function(a){return a.a>1;}).sort(function(a,b){return(b.rent*12/b.p)-(a.rent*12/a.p);}).slice(0,4);
+  var cards='';
+  for(var i=0;i<top.length;i++){
+    var a=top[i], yld=(a.rent*12/a.p*100).toFixed(2), s=sdlt(a.p,true,activeCur!=='gbp'), dep=a.p*0.25, tot=dep+s+3200, v=vrd(a.a);
+    cards+='<div style="background:var(--white);padding:16px 14px">'
+      +'<span class="eyebrow" style="margin-bottom:4px">'+a.r+'</span>'
+      +'<div style="font-size:13px;font-weight:600;margin-bottom:8px">'+a.n+'</div>'
+      +'<div style="font-family:Georgia,serif;font-size:20px;color:var(--gold);margin-bottom:2px">'+cf(a.p,activeCur)+'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:9px">'+gp(a.p)+' GBP</div>'
+      +'<div style="font-size:12px;margin-bottom:3px">Rent: <strong>'+cf(a.rent,activeCur)+'/mo</strong></div>'
+      +'<div style="font-size:12px;margin-bottom:3px">Yield: <strong style="color:var(--green)">'+yld+'%</strong></div>'
+      +'<div style="font-size:12px;margin-bottom:3px">SDLT: <strong>'+cf(s,activeCur)+'</strong>'+(activeCur!=='gbp'?' (+2%)':'')+' </div>'
+      +'<div style="font-size:12px;margin-bottom:9px">Cash needed: <strong>'+cf(tot,activeCur)+'</strong></div>'
+      +'<span class="pill '+v.c+'">'+v.l+'</span>'
+      +'<div style="margin-top:9px"><button class="btn btn-g btn-sm" style="width:100%;font-size:11px" onclick="qS(\''+a.n.replace(/'/g,"\\'")+'\',\'area\')">Full analysis →</button></div>'
+      +'</div>';
+  }
+  var note=activeCur!=='gbp'?'<div class="al al-a" style="margin-bottom:14px">⚠ <strong>Non-resident SDLT:</strong> +2% surcharge on top of additional dwelling +3% = +5% total. 1 GBP = '+m.rate+' '+m.lbl+' (indicative). Consult HMRC-registered tax adviser.</div>':'';
+  var out=document.getElementById('OvContent'); if(!out)return;
+  out.innerHTML=note+'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);margin-bottom:12px">'+cards+'</div>'
+    +'<div style="font-size:11px;color:var(--ink3);background:var(--bg2);border:1px solid var(--bdr);padding:10px 12px;line-height:1.7">Contains HM Land Registry data © Crown copyright 2020. OGL v3.0. Not financial, legal or tax advice.</div>';
+}
+
+// ═══════════════════════════════════════
+// LETTING
+// ═══════════════════════════════════════
+function initLetting() {
+  var g=document.getElementById('LettGrid'); if(!g||g.innerHTML)return;
+  var svcs=[
+    {i:'🔍',t:'Tenant Vetting',b:'Comprehensive referencing — credit, employment, previous landlord and affordability ratio. Guaranteed rent options available.'},
+    {i:'📋',t:'Contract Management',b:'AST drafting, Section 21 compliance, deposit protection and all statutory notices by qualified professionals.'},
+    {i:'💷',t:'Rent Collection',b:'Automated monthly collection, arrears management with escalation protocol and same-day landlord payment.'},
+    {i:'🔧',t:'Maintenance',b:'24/7 tenant reporting portal, vetted contractor network, pre-approved spend limits and sign-off workflow.'},
+    {i:'📊',t:'Compliance',b:'EPC, gas safety, EICR, MEES 2025/2028 roadmap, HMO licensing and selective licensing checks.'},
+    {i:'💼',t:'Full Management',b:'End-to-end: valuation, marketing, vetting, contract, rent collection, maintenance and annual review.'}
+  ];
+  var h='';
+  for(var i=0;i<svcs.length;i++){
+    var s=svcs[i];
+    h+='<div style="background:var(--white);padding:24px 20px;border-top:3px solid transparent;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderTopColor=\'var(--gold)\';this.style.background=\'var(--gold-bg)\'" onmouseleave="this.style.borderTopColor=\'transparent\';this.style.background=\'var(--white)\'"><div style="font-size:22px;margin-bottom:11px">'+s.i+'</div><div style="font-family:Georgia,serif;font-size:17px;margin-bottom:8px">'+s.t+'</div><p style="font-size:13px;color:var(--ink3);line-height:1.75">'+s.b+'</p></div>';
+  }
+  g.innerHTML=h;
+}
+
+// ═══════════════════════════════════════
+// HOME STATS
+// ═══════════════════════════════════════
+function initHomeStats() {
+  var el=document.getElementById('homeStats'); if(!el||el.innerHTML)return;
+  var stats=[{l:'UK Avg Price',v:'£268,000',c:'0.0% annual',cc:'a'},{l:'England',v:'£290,000',c:'−0.6%',cc:'r'},{l:'Wales',v:'£213,000',c:'+2.9%',cc:'g'},{l:'Avg Rent',v:'£1,381',c:'+3.5%',cc:'g'}];
+  var h=''; for(var i=0;i<stats.length;i++){var s=stats[i];h+='<div class="mc"><span class="mclbl">'+s.l+'</span><span class="mcval">'+s.v+'</span><span class="mcchg '+s.cc+'">'+s.c+'</span></div>';}
+  el.innerHTML=h;
+}
+
+// ═══════════════════════════════════════
+// TICKER
+// ═══════════════════════════════════════
+function initTicker() {
+  var items=['UK HPI Mar 2026 · £268,000 · 0.0% · HMLR OGL v3.0','England −0.6% | Wales +2.9% | Scotland +1.6% | N.Ireland +4.8%','London −2.1% | East Midlands +0.7% only English growth region','Search any UK address or postcode · Full property intelligence','Rents £1,381/mo +3.5% · BTL yields widening · Entry window open','Inverclyde +11.0% | Ceredigion +7.2% | Belfast +5.2% | Bradford +3.1%','Contains HM Land Registry data © Crown copyright 2020 · OGL v3.0'];
+  var all=items.concat(items).map(function(t){return '<span class="t-item">'+t+'</span>';}).join('');
+  document.getElementById('TI').innerHTML=all;
+}
+
+// ═══════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  initTicker();
+  initHomeStats();
+  setM('area');
+  setMktMode('area');
+  setInvMode('area');
+  setOvMode('area');
+});
+</script>
+</body>
+</html>
