@@ -1113,8 +1113,8 @@ function extractPostcode(input) {
       '<div class="detail"><div class="empty"><h3>Loading property intelligence...</h3><p>Fetching live data from Terra Intelligence.</p></div></div>';
     var postcode = extractPostcode(q);
     const res = await fetch(
-      https://api.thevineville.com/api/property/lookup?postcode=${encodeURIComponent(postcode)}&apiKey=test123`
-    );
+  `    https://api.thevineville.com/api/property/lookup?postcode=${encodeURIComponent(postcode)}&apiKey=test123`
+);
 
     const data = await res.json();
 
